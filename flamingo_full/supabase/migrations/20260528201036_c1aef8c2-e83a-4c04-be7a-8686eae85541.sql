@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.recompute_bring_item() FROM PUBLIC, anon, authenticated;
