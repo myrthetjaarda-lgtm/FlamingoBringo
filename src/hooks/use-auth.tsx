@@ -40,7 +40,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone")
       .eq("id", userId)
       .maybeSingle();
-    setProfile((data as Profile | null) ?? null);
+
+    if (data) {
+      setProfile(data as Profile);
+      return;
+    }
+
+    // No profile yet — create one (e.g. Google OAuth first sign-in)
+    const { data: { user } } = await supabase.auth.getUser();
+    const displayName =
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      user?.email?.split("@")[0] ||
+      "Flamingo";
+    const emojiAvatar = user?.user_metadata?.emoji_avatar || "🦩";
+
+    const { data: created } = await supabase
+      .from("profiles")
+      .upsert({ id: userId, display_name: displayName, emoji_avatar: emojiAvatar }, { onConflict: "id" })
+      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone")
+      .maybeSingle();
+
+    setProfile((created as Profile | null) ?? null);
   };
 
   useEffect(() => {
