@@ -1,6 +1,9 @@
 {
   "name": "flamingo-bringo",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".output/public",
-  "framework": null
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist/client",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
+  ]
 }
