@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FriendsRouteImport } from './routes/friends'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventIdRouteImport } from './routes/event.$id'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/friends': typeof FriendsRoute
   '/groups': typeof GroupsRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/event/$id': typeof EventIdRoute
   '/groups/$id': typeof GroupsIdRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/friends': typeof FriendsRoute
   '/groups': typeof GroupsRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/event/$id': typeof EventIdRoute
   '/groups/$id': typeof GroupsIdRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/friends': typeof FriendsRoute
   '/groups': typeof GroupsRouteWithChildren
   '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/event/$id': typeof EventIdRoute
   '/groups/$id': typeof GroupsIdRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/friends'
     | '/groups'
     | '/profile'
+    | '/reset-password'
     | '/event/$id'
     | '/groups/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/friends'
     | '/groups'
     | '/profile'
+    | '/reset-password'
     | '/event/$id'
     | '/groups/$id'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/friends'
     | '/groups'
     | '/profile'
+    | '/reset-password'
     | '/event/$id'
     | '/groups/$id'
   fileRoutesById: FileRoutesById
@@ -130,11 +142,19 @@ export interface RootRouteChildren {
   FriendsRoute: typeof FriendsRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   EventIdRoute: typeof EventIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -212,6 +232,7 @@ const rootRouteChildren: RootRouteChildren = {
   FriendsRoute: FriendsRoute,
   GroupsRoute: GroupsRouteWithChildren,
   ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   EventIdRoute: EventIdRoute,
 }
 export const routeTree = rootRouteImport
