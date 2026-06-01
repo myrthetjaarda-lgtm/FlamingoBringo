@@ -27,12 +27,14 @@ function HomePage() {
   const [groups, setGroups] = useState<Map<string, GroupRow>>(new Map());
   const [organizers, setOrganizers] = useState<Map<string, ProfileLite>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("upcoming");
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const rows = await fetchAllEvents();
       setEvents(rows);
@@ -47,7 +49,10 @@ function HomePage() {
       g.forEach((gr) => gMap.set(gr.id, gr));
       setGroups(gMap);
       setOrganizers(p);
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[FlamingoBringo] failed to load events:", msg);
+      setLoadError(msg);
       setEvents([]);
     } finally {
       setLoading(false);
@@ -125,6 +130,10 @@ function HomePage() {
         {loading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : loadError ? (
+          <div className="rounded-3xl border border-dashed border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
+            Failed to load events: {loadError}
           </div>
         ) : events.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
