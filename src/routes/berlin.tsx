@@ -6,12 +6,12 @@ import { AppShell, Chip, Section } from "@/components/AppShell";
 import { BerlinMap } from "@/components/berlin/BerlinMap";
 import { getBerlinForecast } from "@/lib/weather.functions";
 import {
-  SPOTS, NEIGHBORHOODS, LOCAL_EVENTS, WEEK_FORECAST, WEATHER_LABEL,
-  type Spot, type SpotCategory,
+  SPOTS, NEIGHBORHOODS, LOCAL_EVENTS, BERLIN_FESTIVALS, WEEK_FORECAST, WEATHER_LABEL,
+  type Spot, type SpotCategory, type FestivalEvent,
 } from "@/data/berlin";
 import {
   MapPin, Sparkles, Sun, CloudRain, Compass, Users, Clock, Star,
-  Heart, Plus, Search, Sunset, Filter,
+  Heart, Plus, Search, Sunset, Filter, CalendarPlus,
 } from "lucide-react";
 
 
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/berlin")({
   component: BerlinPage,
 });
 
-type Tab = "spots" | "tonight" | "weekend" | "kieze";
+type Tab = "spots" | "tonight" | "weekend" | "festivals" | "kieze";
 
 const CATEGORIES: { key: SpotCategory | "All"; label: string; emoji: string }[] = [
   { key: "All", label: "All", emoji: "✨" },
@@ -44,6 +44,7 @@ const CATEGORIES: { key: SpotCategory | "All"; label: string; emoji: string }[] 
 
 function BerlinPage() {
   const [tab, setTab] = useState<Tab>("spots");
+  const [festCat, setFestCat] = useState<FestivalEvent["category"] | "All">("All");
   const [cat, setCat] = useState<SpotCategory | "All">("All");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState<Set<string>>(new Set(["tempelhof", "klunkerkranich"]));
@@ -150,6 +151,7 @@ function BerlinPage() {
             { k: "spots", label: "Spots", icon: Compass },
             { k: "tonight", label: "Tonight", icon: Sunset },
             { k: "weekend", label: "Weekend", icon: Sparkles },
+            { k: "festivals", label: "Festivals", icon: CalendarPlus },
             { k: "kieze", label: "Kieze", icon: MapPin },
           ] as { k: Tab; label: string; icon: typeof Compass }[]).map((t) => {
             const active = tab === t.k;
@@ -328,6 +330,32 @@ function BerlinPage() {
         </>
       )}
 
+      {tab === "festivals" && (
+        <Section title="Berlin Festival Calendar" subtitle={`${BERLIN_FESTIVALS.length} events across the year`}>
+          <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto pb-1">
+            {(["All","Music","Film","Art","Queer","Food","Sport","Community","Tech","Club"] as const).map((c) => (
+              <button
+                key={c}
+                onClick={() => setFestCat(c)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${
+                  festCat === c
+                    ? "border-coral bg-coral/15 text-coral"
+                    : "border-border bg-background text-muted-foreground"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-2">
+            {BERLIN_FESTIVALS
+              .filter((f) => festCat === "All" || f.category === festCat)
+              .sort((a, b) => a.month - b.month)
+              .map((f) => <FestivalRow key={f.id} festival={f} />)}
+          </div>
+        </Section>
+      )}
+
       {tab === "kieze" && (
         <Section title="Neighborhoods" subtitle="See who hangs where and what's nearby">
           <ul className="space-y-2">
@@ -450,6 +478,45 @@ function SpotRow({
         </div>
       </div>
     </li>
+  );
+}
+
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function FestivalRow({ festival: f }: { festival: FestivalEvent }) {
+  const gcalUrl = f.gcalStart
+    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(f.title)}&dates=${f.gcalStart}/${f.gcalEnd ?? f.gcalStart}&details=${encodeURIComponent(f.blurb)}&location=${encodeURIComponent(f.where + ", Berlin")}`
+    : null;
+
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-3 shadow-card">
+      <div className="flex items-start gap-3">
+        <div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-2xl bg-coral/10 text-center">
+          <span className="text-xl leading-none">{f.emoji}</span>
+          <span className="text-[9px] font-bold text-coral">{MONTH_NAMES[f.month - 1]}</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{f.title}</p>
+              <p className="text-[11px] text-muted-foreground">{f.dates} · {f.where}</p>
+            </div>
+            {f.free && <Chip tone="leaf">Free</Chip>}
+          </div>
+          <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{f.blurb}</p>
+          {gcalUrl && (
+            <a
+              href={gcalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 rounded-full bg-lake/10 px-3 py-1 text-[10px] font-semibold text-lake"
+            >
+              <CalendarPlus className="h-3 w-3" /> Add to Google Calendar
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
