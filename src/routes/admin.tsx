@@ -1,20 +1,12 @@
-import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Section } from "@/components/AppShell";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { AppShell, Section, Chip } from "@/components/AppShell";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Users } from "lucide-react";
+import { getAdminUsers } from "@/lib/admin.functions";
+import { Loader2, Mail, MapPin, Calendar } from "lucide-react";
 
 const ADMIN_EMAIL = "myrthetjaarda@gmail.com";
-
-type ProfileRow = {
-  id: string;
-  display_name: string;
-  emoji_avatar: string;
-  neighborhood: string | null;
-  created_at: string;
-  email?: string;
-};
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — FlamingoBringo" }] }),
@@ -23,29 +15,14 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const { user } = useAuth();
-  const [profiles, setProfiles] = useState<ProfileRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const isAdmin = user?.email === ADMIN_EMAIL;
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    const load = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, display_name, emoji_avatar, neighborhood, created_at")
-        .order("created_at", { ascending: false });
-      if (error) {
-        setError(error.message);
-      } else {
-        setProfiles(data ?? []);
-      }
-      setLoading(false);
-    };
-    void load();
-  }, [isAdmin]);
+  const fetchUsers = useServerFn(getAdminUsers);
+  const { data: users, isLoading, error } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: () => fetchUsers(),
+    enabled: isAdmin,
+  });
 
   if (!isAdmin) {
     return (
@@ -61,42 +38,64 @@ function AdminPage() {
     <AppShell>
       <Section
         title="Admin — Users"
-        subtitle={loading ? "Loading…" : `${profiles.length} users`}
+        subtitle={isLoading ? "Loading…" : `${users?.length ?? 0} registered users`}
       >
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : error ? (
           <div className="rounded-3xl border border-dashed border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
-            {error}
+            {error instanceof Error ? error.message : "Failed to load users"}
           </div>
-        ) : profiles.length === 0 ? (
+        ) : !users?.length ? (
           <div className="rounded-3xl border border-dashed border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
             No users yet.
           </div>
         ) : (
           <div className="space-y-2">
-            {profiles.map((p) => (
+            {users.map((u) => (
               <div
-                key={p.id}
-                className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card"
+                key={u.id}
+                className="rounded-2xl border border-border/60 bg-card p-3 shadow-card"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral/15 text-lg">
-                  {p.emoji_avatar}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-sm">{p.display_name}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {p.neighborhood ?? "No neighborhood"} · joined{" "}
-                    {new Date(p.created_at).toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-coral/15 text-xl">
+                    {u.emoji_avatar}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-sm">{u.display_name}</p>
+                      <Chip tone={u.provider === "google" ? "coral" : "lake"}>
+                        {u.provider === "google" ? "Google" : "Email"}
+                      </Chip>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> {u.email}
+                      </span>
+                      {u.neighborhood && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {u.neighborhood}
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> joined{" "}
+                        {new Date(u.created_at).toLocaleDateString(undefined, {
+                          day: "numeric", month: "short", year: "numeric",
+                        })}
+                      </span>
+                      {u.last_sign_in_at && (
+                        <span className="text-muted-foreground/70">
+                          last seen{" "}
+                          {new Date(u.last_sign_in_at).toLocaleDateString(undefined, {
+                            day: "numeric", month: "short",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
               </div>
             ))}
           </div>
