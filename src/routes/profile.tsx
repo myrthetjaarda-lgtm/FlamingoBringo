@@ -14,14 +14,25 @@ export const Route = createFileRoute("/profile")({
 });
 
 const DIETARY_OPTIONS = [
-  "Vegetarian",
-  "Vegan",
-  "Gluten-free",
-  "Dairy-free",
-  "Nut allergy",
-  "Halal",
-  "Kosher",
-  "Pescatarian",
+  "Vegetarian", "Vegan", "Gluten-free", "Dairy-free",
+  "Nut allergy", "Halal", "Kosher", "Pescatarian",
+];
+
+const INTEREST_OPTIONS = [
+  "BBQs", "Lakes", "Open-air cinema", "Beer gardens", "Picnics",
+  "Clubs", "Festivals", "Markets", "Hiking", "Board games",
+  "Sports", "Volleyball", "Swimming", "Dancing", "Cycling",
+  "Museums", "Karaoke", "Food markets", "Tech meetups", "Cinema",
+];
+
+const AVAILABILITY_OPTIONS = [
+  "Open for plans", "Free this weekend", "In Berlin",
+  "Working remotely", "Busy", "Traveling", "On holiday",
+];
+
+const SOCIAL_MODE_OPTIONS = [
+  "Looking for plans", "Lake mode ☀️", "Chill only", "Party mode",
+  "Outdoor mode", "Sports mood", "Quiet weekend", "Family time",
 ];
 
 const EMOJI_POOL = ["🦩", "🍉", "🌻", "🥖", "🍑", "🌮", "🥑", "🧁", "🐝", "🐙", "🦊", "🌈"];
@@ -41,6 +52,9 @@ function ProfilePage() {
   const [facebook, setFacebook] = useState("");
   const [showPhone, setShowPhone] = useState(true);
   const [dietary, setDietary] = useState<string[]>([]);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [availabilityStatus, setAvailabilityStatus] = useState("In Berlin");
+  const [socialMode, setSocialMode] = useState("Looking for plans");
 
   const hydrate = () => {
     if (!profile) return;
@@ -54,6 +68,9 @@ function ProfilePage() {
     setFacebook(profile.facebook ?? "");
     setShowPhone(profile.show_phone ?? true);
     setDietary(profile.dietary ?? []);
+    setInterests(profile.interests ?? []);
+    setAvailabilityStatus(profile.availability_status ?? "In Berlin");
+    setSocialMode(profile.social_mode ?? "Looking for plans");
   };
 
   useEffect(() => {
@@ -61,9 +78,11 @@ function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
-  const toggleDiet = (d: string) => {
+  const toggleDiet = (d: string) =>
     setDietary((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
-  };
+
+  const toggleInterest = (i: string) =>
+    setInterests((cur) => (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]));
 
   const cancel = () => {
     hydrate();
@@ -89,6 +108,9 @@ function ProfilePage() {
         facebook: facebook.trim().slice(0, 200) || null,
         show_phone: showPhone,
         dietary,
+        interests,
+        availability_status: availabilityStatus,
+        social_mode: socialMode,
       })
       .eq("id", user.id);
     setSaving(false);
@@ -263,6 +285,57 @@ function ProfilePage() {
               />
             </Field>
 
+            <Field label="Status">
+              <div className="flex flex-wrap gap-1.5">
+                {AVAILABILITY_OPTIONS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setAvailabilityStatus(s)}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                      availabilityStatus === s ? "bg-coral/20 text-coral" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Social mode">
+              <div className="flex flex-wrap gap-1.5">
+                {SOCIAL_MODE_OPTIONS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setSocialMode(m)}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                      socialMode === m ? "bg-lake/20 text-lake" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Interests">
+              <div className="flex flex-wrap gap-1.5">
+                {INTEREST_OPTIONS.map((i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => toggleInterest(i)}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                      interests.includes(i) ? "bg-coral/15 text-coral" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {i}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
             <Field label="Dietary preferences">
               <div className="flex flex-wrap gap-1.5">
                 {DIETARY_OPTIONS.map((d) => {
@@ -318,6 +391,23 @@ function ProfilePage() {
             {(profile?.instagram || profile?.facebook) && (
               <div className="mt-2">
                 <SocialLinks instagram={profile?.instagram} facebook={profile?.facebook} />
+              </div>
+            )}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {profile?.availability_status && (
+                <Chip tone="coral">{profile.availability_status}</Chip>
+              )}
+              {profile?.social_mode && (
+                <Chip tone="lake">{profile.social_mode}</Chip>
+              )}
+            </div>
+            {profile?.interests && profile.interests.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {profile.interests.map((i) => (
+                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                    {i}
+                  </span>
+                ))}
               </div>
             )}
             {profile?.dietary && profile.dietary.length > 0 && (
