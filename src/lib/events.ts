@@ -27,6 +27,7 @@ export type BringItemRow = {
   status: "pending" | "confirmed";
   created_at: string;
   qty_needed: number;
+  is_byo: boolean;
 };
 
 export type BringClaimRow = {
@@ -56,6 +57,7 @@ export type ProfileFull = {
   facebook: string | null;
   show_phone: boolean;
   default_location: string | null;
+  equipment: string[];
 };
 
 // Common staples that people usually already have at home.
@@ -161,7 +163,7 @@ export async function fetchProfilesFull(ids: string[]) {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, emoji_avatar, bio, dietary, phone, instagram, facebook, show_phone, default_location",
+      "id, display_name, emoji_avatar, bio, dietary, phone, instagram, facebook, show_phone, default_location, equipment",
     )
     .in("id", ids);
   if (error) throw error;
@@ -243,6 +245,7 @@ export async function addBringItem(input: {
   required?: boolean;
   category?: string;
   qty_needed?: number;
+  is_byo?: boolean;
 }) {
   const { error } = await supabase.from("bring_items").insert({
     event_id: input.event_id,
@@ -254,6 +257,7 @@ export async function addBringItem(input: {
     required: input.required ?? false,
     category: input.category ?? "other",
     qty_needed: Math.max(1, input.qty_needed ?? 1),
+    is_byo: input.is_byo ?? false,
   });
   if (error) throw error;
 }

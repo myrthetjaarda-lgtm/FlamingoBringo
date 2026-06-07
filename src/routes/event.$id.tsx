@@ -17,6 +17,7 @@ import {
 import { SocialLinks } from "@/components/SocialLinks";
 import { BringStatusBar } from "@/components/event/BringStatusBar";
 import { BringMaster } from "@/components/event/BringMaster";
+import { EveryoneBrings } from "@/components/event/EveryoneBrings";
 import { RsvpSection } from "@/components/event/RsvpSection";
 import { ContributionTable } from "@/components/event/ContributionTable";
 import { FindADate } from "@/components/event/FindADate";
@@ -238,6 +239,7 @@ function EventPage() {
 
       <FindADate eventId={event.id} isOrganizer={isOrganizer} />
 
+      <EveryoneBrings eventId={event.id} />
       <BringMaster eventId={event.id} isOrganizer={isOrganizer} />
 
 
