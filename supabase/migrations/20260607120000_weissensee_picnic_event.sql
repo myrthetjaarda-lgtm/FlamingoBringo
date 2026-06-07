@@ -23,7 +23,7 @@ BEGIN
     v_organizer_id,
     'Weisser See Picnic ☀️',
     E'Summer picnic at Weißer See!\n\nAdmission: Strandbad 9,50 €\n\nEveryone brings: Drinks (beer/wine/water), Sunscreen, Sunglasses, Towel, Bathing suit, Blanket, Paper plates, Fork & Knife\n\nPlan B if rain: BRLO or Cafe am Neuen See\n\nOptional evening from 19:00: free Indian vegetarian food at Jagannatha Temple ISKCON Berlin 🕌',
-    '2026-06-20 14:00:00+02',  -- adjust date if needed
+    '2026-05-31 14:00:00+02',  -- past event (already happened)
     'Strandbad Weißer See, Falkenberger Str. 135, 13088 Berlin (M12 tram: Berliner Allee)'
   )
   RETURNING id INTO v_event_id;
