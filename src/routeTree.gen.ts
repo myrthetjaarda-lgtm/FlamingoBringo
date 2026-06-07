@@ -15,6 +15,7 @@ import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as BerlinRouteImport } from './routes/berlin'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventIdRouteImport } from './routes/event.$id'
@@ -49,6 +50,11 @@ const BerlinRoute = BerlinRouteImport.update({
   path: '/berlin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,6 +73,7 @@ const EventIdRoute = EventIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/berlin': typeof BerlinRoute
   '/discover': typeof DiscoverRoute
   '/friends': typeof FriendsRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/berlin': typeof BerlinRoute
   '/discover': typeof DiscoverRoute
   '/friends': typeof FriendsRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/berlin': typeof BerlinRoute
   '/discover': typeof DiscoverRoute
   '/friends': typeof FriendsRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/berlin'
     | '/discover'
     | '/friends'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/berlin'
     | '/discover'
     | '/friends'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/berlin'
     | '/discover'
     | '/friends'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   BerlinRoute: typeof BerlinRoute
   DiscoverRoute: typeof DiscoverRoute
   FriendsRoute: typeof FriendsRoute
@@ -190,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BerlinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -227,6 +247,7 @@ const GroupsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   BerlinRoute: BerlinRoute,
   DiscoverRoute: DiscoverRoute,
   FriendsRoute: FriendsRoute,
