@@ -4,26 +4,80 @@ import { AppShell, Section } from "@/components/AppShell";
 import { Plus, Loader2, Users } from "lucide-react";
 import { fetchAllGroups, type GroupRow } from "@/lib/groups";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchProfiles, type ProfileLite } from "@/lib/events";
 
 export const Route = createFileRoute("/friends")({
   head: () => ({ meta: [{ title: "Friends · FlamingoBringo" }] }),
   component: FriendsPage,
 });
 
+type FriendEntry = ProfileLite & { sharedEvents: number };
+
 function FriendsPage() {
   const { user } = useAuth();
   const [groups, setGroups] = useState<GroupRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const [friends, setFriends] = useState<FriendEntry[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(true);
 
   useEffect(() => {
     fetchAllGroups()
       .then(setGroups)
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => setGroupsLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!user) { setFriendsLoading(false); return; }
+
+    const load = async () => {
+      // Get all events the current user has RSVPd to
+      const { data: myRsvps } = await supabase
+        .from("rsvps")
+        .select("event_id")
+        .eq("user_id", user.id);
+
+      const myEventIds = (myRsvps ?? []).map((r: { event_id: string }) => r.event_id);
+      if (myEventIds.length === 0) { setFriendsLoading(false); return; }
+
+      // Get all other RSVPs on those events
+      const { data: otherRsvps } = await supabase
+        .from("rsvps")
+        .select("user_id, event_id")
+        .in("event_id", myEventIds)
+        .neq("user_id", user.id);
+
+      if (!otherRsvps || otherRsvps.length === 0) { setFriendsLoading(false); return; }
+
+      // Count shared events per person
+      const countMap = new Map<string, number>();
+      (otherRsvps as { user_id: string; event_id: string }[]).forEach((r) => {
+        countMap.set(r.user_id, (countMap.get(r.user_id) ?? 0) + 1);
+      });
+
+      const userIds = Array.from(countMap.keys());
+      const profiles = await fetchProfiles(userIds);
+
+      const result: FriendEntry[] = userIds
+        .map((id) => {
+          const p = profiles.get(id);
+          if (!p) return null;
+          return { ...p, sharedEvents: countMap.get(id) ?? 1 };
+        })
+        .filter((f): f is FriendEntry => f !== null)
+        .sort((a, b) => b.sharedEvents - a.sharedEvents);
+
+      setFriends(result);
+      setFriendsLoading(false);
+    };
+
+    void load();
+  }, [user]);
 
   const mine = groups.filter((g) => g.owner_id === user?.id);
   const joined = groups.filter((g) => g.owner_id !== user?.id);
+  const loading = groupsLoading;
 
   return (
     <AppShell>
@@ -88,16 +142,61 @@ function FriendsPage() {
         )}
       </Section>
 
-      <Section title="Friends" subtitle="People you've shared events with">
-        <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-lake/10 text-3xl">
-            <Users className="h-7 w-7 text-lake" />
+      <Section
+        title="Friends"
+        subtitle={
+          friendsLoading
+            ? "Loading…"
+            : friends.length > 0
+              ? `${friends.length} people from shared events`
+              : "People you've shared events with"
+        }
+      >
+        {friendsLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
-          <p className="mt-3 font-display text-sm font-semibold">Invite someone to an event</p>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Share an event link — friends who join will appear here.
-          </p>
-        </div>
+        ) : friends.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-lake/10 text-3xl">
+              <Users className="h-7 w-7 text-lake" />
+            </div>
+            <p className="mt-3 font-display text-sm font-semibold">Invite someone to an event</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Share an event link — friends who join will appear here.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {friends.map((f) => (
+              <li
+                key={f.id}
+                className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-lake/15 text-lg">
+                  {f.emoji_avatar}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-semibold">{f.display_name}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {f.sharedEvents} shared event{f.sharedEvents === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      `Hey ${f.display_name}! 👋 Let's plan something on FlamingoBringo 🦩`
+                    );
+                    window.open(`https://wa.me/?text=${text}`, "_blank");
+                  }}
+                  className="rounded-full bg-coral/15 px-3 py-1.5 text-[11px] font-semibold text-coral"
+                >
+                  Ping
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
     </AppShell>
   );

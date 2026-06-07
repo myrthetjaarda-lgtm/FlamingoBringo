@@ -23,6 +23,7 @@ import { ContributionTable } from "@/components/event/ContributionTable";
 import { FindADate } from "@/components/event/FindADate";
 import { InviteSheet } from "@/components/event/InviteSheet";
 import { AttendeesSheet } from "@/components/event/AttendeesSheet";
+import { CalendarExport } from "@/components/event/CalendarExport";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { toast } from "sonner";
 
@@ -244,6 +245,8 @@ function EventPage() {
         {/* Card 2 — Bring Status */}
         <BringStatusBar eventId={event.id} />
       </div>
+
+      <CalendarExport event={event} />
 
       <RsvpSection eventId={event.id} />
 
