@@ -317,6 +317,13 @@ function DiscoverPage() {
                       </div>
                       <button
                         disabled={isAway}
+                        onClick={() => {
+                          if (isAway) return;
+                          const text = encodeURIComponent(
+                            `Hey ${p.display_name}! 👋 Spotted you on FlamingoBringo — want to hang out in Berlin?`
+                          );
+                          window.open(`https://wa.me/?text=${text}`, "_blank");
+                        }}
                         className={`rounded-full px-3 py-1.5 text-[11px] font-semibold ${
                           isAway ? "bg-muted text-muted-foreground" : "bg-coral/15 text-coral"
                         }`}

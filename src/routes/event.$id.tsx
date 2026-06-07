@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell, Chip, Section } from "@/components/AppShell";
 import heroImg from "@/assets/lake-hero.jpg";
 import {
-  ArrowLeft, MapPin, Calendar, Clock, Share2, Loader2, User, Pencil, Mail, Check, Trash2,
+  ArrowLeft, MapPin, Calendar, Clock, Share2, Loader2, User, Users, Pencil, Mail, Check, Trash2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -22,6 +22,7 @@ import { RsvpSection } from "@/components/event/RsvpSection";
 import { ContributionTable } from "@/components/event/ContributionTable";
 import { FindADate } from "@/components/event/FindADate";
 import { InviteSheet } from "@/components/event/InviteSheet";
+import { AttendeesSheet } from "@/components/event/AttendeesSheet";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { toast } from "sonner";
 
@@ -46,6 +47,7 @@ function EventPage() {
   const [notFound, setNotFound] = useState(false);
   const [editingMeta, setEditingMeta] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [attendeesOpen, setAttendeesOpen] = useState(false);
 
 
   useEffect(() => {
@@ -142,12 +144,20 @@ function EventPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <button
-            onClick={() => setInviteOpen(true)}
-            className="flex h-10 items-center gap-1.5 rounded-full bg-coral px-4 text-sm font-semibold text-primary-foreground shadow-float"
-          >
-            <Share2 className="h-4 w-4" /> Share
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAttendeesOpen(true)}
+              className="flex h-10 items-center gap-1.5 rounded-full bg-card/85 px-4 text-sm font-semibold shadow-soft backdrop-blur-xl"
+            >
+              <Users className="h-4 w-4" /> People
+            </button>
+            <button
+              onClick={() => setInviteOpen(true)}
+              className="flex h-10 items-center gap-1.5 rounded-full bg-coral px-4 text-sm font-semibold text-primary-foreground shadow-float"
+            >
+              <Share2 className="h-4 w-4" /> Share
+            </button>
+          </div>
 
         </div>
       </div>
@@ -254,6 +264,12 @@ function EventPage() {
           emptyHint="Start the convo — say hi, ask who's bringing what 🍉"
         />
       </Section>
+
+      <AttendeesSheet
+        open={attendeesOpen}
+        onClose={() => setAttendeesOpen(false)}
+        eventId={event.id}
+      />
 
       <InviteSheet
         open={inviteOpen}

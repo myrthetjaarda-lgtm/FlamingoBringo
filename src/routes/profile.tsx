@@ -13,6 +13,13 @@ export const Route = createFileRoute("/profile")({
   component: ProfilePage,
 });
 
+const BERLIN_NEIGHBORHOODS = [
+  "Mitte", "Prenzlauer Berg", "Friedrichshain", "Kreuzberg", "Neukölln",
+  "Tempelhof", "Schöneberg", "Charlottenburg", "Wilmersdorf", "Zehlendorf",
+  "Steglitz", "Wedding", "Pankow", "Weißensee", "Lichtenberg",
+  "Treptow", "Köpenick", "Spandau", "Marzahn", "Reinickendorf",
+];
+
 const DIETARY_OPTIONS = [
   "Vegetarian", "Vegan", "Gluten-free", "Dairy-free",
   "Nut allergy", "Halal", "Kosher", "Pescatarian",
@@ -225,13 +232,22 @@ function ProfilePage() {
             </Field>
 
             <Field label="Neighborhood">
-              <input
-                value={neighborhood}
-                onChange={(e) => setNeighborhood(e.target.value)}
-                maxLength={80}
-                placeholder="e.g. Neukölln"
-                className="w-full rounded-2xl border border-border/60 bg-card px-3 py-2 text-sm outline-none focus:border-coral"
-              />
+              <div className="flex flex-wrap gap-1.5">
+                {BERLIN_NEIGHBORHOODS.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setNeighborhood(neighborhood === n ? "" : n)}
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
+                      neighborhood === n
+                        ? "bg-coral text-white"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </Field>
 
             <Field label="Default location">
