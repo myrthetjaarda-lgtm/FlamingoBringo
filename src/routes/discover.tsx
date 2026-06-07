@@ -8,6 +8,7 @@ import {
   type AvailabilityStatus, type SocialMode,
 } from "@/data/discover";
 import { fetchDiscoverProfiles } from "@/lib/discover.functions";
+import { CreateEventSheet } from "@/components/event/CreateEventSheet";
 import { NeighborhoodMap } from "@/components/berlin/NeighborhoodMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -43,6 +44,8 @@ function DiscoverPage() {
   const { user, profile } = useAuth();
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("around");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createDefaults, setCreateDefaults] = useState<{ name?: string; location?: string }>({});
   const [query, setQuery] = useState("");
   const [shareLocation, setShareLocation] = useState(true);
   const [syncCal, setSyncCal] = useState(false);
@@ -189,7 +192,7 @@ function DiscoverPage() {
         </div>
 
         {/* Spontaneous CTA */}
-        <button className="mt-3 flex w-full items-center justify-between rounded-3xl bg-gradient-to-r from-coral to-coral/70 px-4 py-3 text-left text-white shadow-float">
+        <button onClick={() => { setCreateDefaults({}); setCreateOpen(true); }} className="mt-3 flex w-full items-center justify-between rounded-3xl bg-gradient-to-r from-coral to-coral/70 px-4 py-3 text-left text-white shadow-float">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20"><Zap className="h-4 w-4" /></span>
             <div>
@@ -383,10 +386,16 @@ function DiscoverPage() {
                     {s.why}
                   </p>
                   <div className="mt-2 flex gap-2">
-                    <button className="flex-1 rounded-full bg-coral px-3 py-1.5 text-[11px] font-semibold text-white">
+                    <button
+                      onClick={() => { setCreateDefaults({ name: s.title, location: s.where }); setCreateOpen(true); }}
+                      className="flex-1 rounded-full bg-coral px-3 py-1.5 text-[11px] font-semibold text-white"
+                    >
                       Plan it
                     </button>
-                    <button className="rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-muted-foreground">
+                    <button
+                      onClick={() => { setCreateDefaults({ name: s.title, location: s.where }); setCreateOpen(true); }}
+                      className="rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
+                    >
                       Invite friends
                     </button>
                   </div>
@@ -406,7 +415,10 @@ function DiscoverPage() {
                 <li key={i} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card">
                   <span className="text-xl">{m.emoji}</span>
                   <p className="flex-1 text-sm">{m.text}</p>
-                  <button className="rounded-full bg-coral/15 px-3 py-1.5 text-[11px] font-semibold text-coral">Suggest</button>
+                  <button
+                    onClick={() => { setCreateDefaults({ name: m.text }); setCreateOpen(true); }}
+                    className="rounded-full bg-coral/15 px-3 py-1.5 text-[11px] font-semibold text-coral"
+                  >Suggest</button>
                 </li>
               ))}
             </ul>
@@ -556,5 +568,13 @@ function DiscoverPage() {
         </>
       )}
     </AppShell>
+
+    {createOpen && (
+      <CreateEventSheet
+        onClose={() => setCreateOpen(false)}
+        defaultName={createDefaults.name}
+        defaultLocation={createDefaults.location}
+      />
+    )}
   );
 }

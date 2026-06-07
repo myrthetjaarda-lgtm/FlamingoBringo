@@ -6,12 +6,20 @@ import { createEvent } from "@/lib/events";
 import { fetchAllGroups, fetchMyGroupIds, type GroupRow } from "@/lib/groups";
 import { toast } from "sonner";
 
-export function CreateEventSheet({ onClose }: { onClose: () => void }) {
+export function CreateEventSheet({
+  onClose,
+  defaultName = "",
+  defaultLocation = "",
+}: {
+  onClose: () => void;
+  defaultName?: string;
+  defaultLocation?: string;
+}) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultName);
   const [startsAt, setStartsAt] = useState("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState(defaultLocation);
   const [description, setDescription] = useState("");
   const [groupId, setGroupId] = useState<string | "">("");
   const [groups, setGroups] = useState<GroupRow[]>([]);
