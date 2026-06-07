@@ -504,6 +504,16 @@ function FestivalRow({ festival: f }: { festival: FestivalEvent }) {
             {f.free && <Chip tone="leaf">Free</Chip>}
           </div>
           <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{f.blurb}</p>
+          {f.suggestion && (
+            <p className="mt-1 rounded-xl bg-coral/8 px-2 py-1 text-[10px] text-coral/90">
+              💡 {f.suggestion}
+            </p>
+          )}
+          {f.approx && (
+            <span className="mt-1 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-600">
+              dates approx.
+            </span>
+          )}
           {gcalUrl && (
             <a
               href={gcalUrl}
