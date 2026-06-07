@@ -8,6 +8,7 @@ import {
   type AvailabilityStatus, type SocialMode,
 } from "@/data/discover";
 import { fetchDiscoverProfiles } from "@/lib/discover.functions";
+import { NeighborhoodMap } from "@/components/berlin/NeighborhoodMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -252,26 +253,17 @@ function DiscoverPage() {
         <>
 
 
-          {/* Heatmap */}
-          <Section title="Social heatmap" subtitle="Where your people are right now">
-            <div className="rounded-3xl border border-border/60 bg-card p-4 shadow-card">
-              <div className="flex flex-wrap gap-2">
-                {displayHeatmap.map((h) => (
-                  <div
-                    key={h.area}
-                    className="flex items-center gap-1.5 rounded-2xl border border-border/60 bg-background px-3 py-1.5 text-[11px] font-semibold"
-                  >
-                    <MapPin className="h-3 w-3 text-coral" />
-                    {h.area}
-                    <Chip tone={h.tone}>{h.count}</Chip>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 flex items-start gap-2 rounded-2xl bg-secondary/60 p-3 text-[11px] text-muted-foreground">
-                <Lock className="mt-0.5 h-3 w-3" />
-                Only approximate areas — never your exact location.
-              </p>
-            </div>
+          {/* Neighborhood map */}
+          <Section title="Berlin neighborhood map" subtitle="Where your people are">
+            <NeighborhoodMap
+              counts={Object.fromEntries(realHeatmap.map((h) => [h.area, h.count]))}
+              myNeighborhood={profile?.neighborhood}
+              onSelect={(name) => setQuery(name)}
+            />
+            <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              Tap a neighborhood to filter the list below · only kiez-level, never exact location
+            </p>
           </Section>
 
           {/* People */}

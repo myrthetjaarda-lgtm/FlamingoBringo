@@ -1,10 +1,15 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { BottomNav } from "./BottomNav";
 import { useAuth } from "@/hooks/use-auth";
+import { OnboardingSheet } from "./OnboardingSheet";
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { profile, user } = useAuth();
+  const needsOnboarding = !!user && !!profile && !profile.neighborhood;
+  const [dismissedOnboarding, setDismissedOnboarding] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-warm">
       <div className="mx-auto min-h-screen max-w-md bg-background/40 pb-32">
@@ -12,6 +17,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </div>
       <BottomNav />
+      <OnboardingSheet
+        open={needsOnboarding && !dismissedOnboarding}
+        onClose={() => setDismissedOnboarding(true)}
+      />
     </div>
   );
 }
