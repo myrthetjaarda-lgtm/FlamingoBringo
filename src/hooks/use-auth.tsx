@@ -16,6 +16,8 @@ export type Profile = {
   instagram: string | null;
   facebook: string | null;
   show_phone: boolean;
+  availability_status: string;
+  social_mode: string;
 };
 
 type AuthContextValue = {
@@ -37,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone")
+      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
       .eq("id", userId)
       .maybeSingle();
 
@@ -58,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: created } = await supabase
       .from("profiles")
       .upsert({ id: userId, display_name: displayName, emoji_avatar: emojiAvatar }, { onConflict: "id" })
-      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone")
+      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
       .maybeSingle();
 
     setProfile((created as Profile | null) ?? null);

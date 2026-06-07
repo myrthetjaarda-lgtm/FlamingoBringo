@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { AppShell, Chip, Section } from "@/components/AppShell";
 import {
-  INTERESTS, people, suggestions, heatmap,
+  INTERESTS, suggestions, heatmap,
   type AvailabilityStatus, type SocialMode,
 } from "@/data/discover";
+import { fetchDiscoverProfiles } from "@/lib/discover.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import {
   MapPin, Sparkles, CalendarCheck2, Plane, Compass, Plus,
   Search, Zap, Radar, Lock, CalendarDays, Cloud, Users, Sun, ChevronRight,
@@ -34,32 +39,90 @@ const STATUS_TONE: Record<AvailabilityStatus, "coral" | "lake" | "sun" | "leaf" 
 };
 
 function DiscoverPage() {
+  const { user, profile } = useAuth();
+  const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("around");
-  const [myStatus, setMyStatus] = useState<AvailabilityStatus>("Open for plans");
-  const [myMode, setMyMode] = useState<SocialMode>("Looking for plans");
-  const [myInterests, setMyInterests] = useState<string[]>([
-    "BBQs", "Lakes", "Open-air cinema", "Beer gardens", "Picnics",
-  ]);
   const [query, setQuery] = useState("");
   const [shareLocation, setShareLocation] = useState(true);
   const [syncCal, setSyncCal] = useState(false);
 
-  const aroundCount = people.filter((p) => p.status !== "On holiday" && p.status !== "Traveling").length;
+  // My current status (initialise from profile, fallback to default)
+  const [myStatus, setMyStatusLocal] = useState<AvailabilityStatus>(
+    (profile?.availability_status as AvailabilityStatus) ?? "Open for plans",
+  );
+  const [myMode, setMyModeLocal] = useState<SocialMode>(
+    (profile?.social_mode as SocialMode) ?? "Looking for plans",
+  );
+  const myInterests: string[] = (profile?.interests as string[]) ?? [];
+
+  // Save presence to Supabase when user changes their status/mode
+  const savePresence = useMutation({
+    mutationFn: async (patch: { availability_status?: string; social_mode?: string }) => {
+      if (!user) return;
+      await supabase.from("profiles").update(patch).eq("id", user.id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["discover-profiles"] }),
+  });
+
+  function setMyStatus(s: AvailabilityStatus) {
+    setMyStatusLocal(s);
+    savePresence.mutate({ availability_status: s });
+  }
+  function setMyMode(m: SocialMode) {
+    setMyModeLocal(m);
+    savePresence.mutate({ social_mode: m });
+  }
+
+  // Load real profiles
+  const loadProfiles = useServerFn(fetchDiscoverProfiles);
+  const { data: allProfiles = [] } = useQuery({
+    queryKey: ["discover-profiles"],
+    queryFn: () => loadProfiles(),
+    staleTime: 60_000,
+  });
+
+  // Exclude current user from the list
+  const otherProfiles = useMemo(
+    () => allProfiles.filter((p) => p.id !== user?.id),
+    [allProfiles, user?.id],
+  );
+
+  const aroundCount = otherProfiles.filter(
+    (p) => p.availability_status !== "On holiday" && p.availability_status !== "Traveling",
+  ).length;
+
   const matchedSuggestions = useMemo(
     () => suggestions.slice().sort((a, b) => b.matches - a.matches),
     [],
   );
 
+  // Build heatmap from real neighborhood data
+  const realHeatmap = useMemo(() => {
+    const counts: Record<string, number> = {};
+    otherProfiles.forEach((p) => {
+      if (p.neighborhood) counts[p.neighborhood] = (counts[p.neighborhood] ?? 0) + 1;
+    });
+    const tones = ["coral", "lake", "sun", "leaf"] as const;
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([area, count], i) => ({ area, count, tone: tones[i % tones.length] }));
+  }, [otherProfiles]);
+
+  // Use real heatmap if populated, else fallback to static
+  const displayHeatmap = realHeatmap.length > 0 ? realHeatmap : heatmap;
+
   const filteredPeople = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return people;
-    return people.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.neighborhood.toLowerCase().includes(q) ||
-        p.interests.some((i) => i.toLowerCase().includes(q)),
-    );
-  }, [query]);
+    return otherProfiles.filter((p) => {
+      if (!q) return true;
+      return (
+        p.display_name.toLowerCase().includes(q) ||
+        (p.neighborhood ?? "").toLowerCase().includes(q) ||
+        p.interests.some((i) => i.toLowerCase().includes(q))
+      );
+    });
+  }, [query, otherProfiles]);
 
   return (
     <AppShell>
@@ -78,7 +141,9 @@ function DiscoverPage() {
         <div className="mt-4 rounded-3xl border border-border/60 bg-card p-4 shadow-card">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-coral/15 text-xl">🦩</span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-coral/15 text-xl">
+                {profile?.emoji_avatar ?? "🦩"}
+              </span>
               <div>
                 <p className="text-xs text-muted-foreground">You&apos;re currently</p>
                 <p className="font-display text-base font-semibold">
@@ -86,7 +151,7 @@ function DiscoverPage() {
                 </p>
               </div>
             </div>
-            <Chip tone="leaf">Neukölln</Chip>
+            {profile?.neighborhood && <Chip tone="leaf">{profile.neighborhood}</Chip>}
           </div>
 
           <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto pb-1">
@@ -128,7 +193,7 @@ function DiscoverPage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white/20"><Zap className="h-4 w-4" /></span>
             <div>
               <p className="text-sm font-semibold">Spark a spontaneous meetup</p>
-              <p className="text-[11px] text-white/85">{aroundCount} friends around · post in 10 sec</p>
+              <p className="text-[11px] text-white/85">{aroundCount} {aroundCount === 1 ? "friend" : "friends"} around · post in 10 sec</p>
             </div>
           </div>
           <Plus className="h-5 w-5" />
@@ -191,7 +256,7 @@ function DiscoverPage() {
           <Section title="Social heatmap" subtitle="Where your people are right now">
             <div className="rounded-3xl border border-border/60 bg-card p-4 shadow-card">
               <div className="flex flex-wrap gap-2">
-                {heatmap.map((h) => (
+                {displayHeatmap.map((h) => (
                   <div
                     key={h.area}
                     className="flex items-center gap-1.5 rounded-2xl border border-border/60 bg-background px-3 py-1.5 text-[11px] font-semibold"
@@ -210,7 +275,7 @@ function DiscoverPage() {
           </Section>
 
           {/* People */}
-          <Section title="Friends around" subtitle={`${aroundCount} in Berlin · sorted by distance`}>
+          <Section title="Friends around" subtitle={`${aroundCount} in Berlin`}>
             <div className="relative mb-3">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -221,10 +286,16 @@ function DiscoverPage() {
               />
             </div>
 
+            {filteredPeople.length === 0 && (
+              <p className="rounded-3xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No friends here yet — invite people to join FlamingoBringo!
+              </p>
+            )}
             <ul className="space-y-2">
               {filteredPeople.map((p) => {
                 const overlap = p.interests.filter((i) => myInterests.includes(i));
-                const isAway = p.status === "Traveling" || p.status === "On holiday";
+                const isAway = p.availability_status === "Traveling" || p.availability_status === "On holiday";
+                const statusTone = STATUS_TONE[p.availability_status as AvailabilityStatus] ?? "neutral";
                 return (
                   <li
                     key={p.id}
@@ -232,7 +303,7 @@ function DiscoverPage() {
                   >
                     <div className="flex items-center gap-3">
                       <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-lg">
-                        {p.emoji}
+                        {p.emoji_avatar}
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card ${
                             isAway ? "bg-sun" : "bg-leaf"
@@ -241,14 +312,14 @@ function DiscoverPage() {
                       </span>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold">{p.name}</p>
-                          <Chip tone={STATUS_TONE[p.status]}>{p.status}</Chip>
+                          <p className="text-sm font-semibold">{p.display_name}</p>
+                          <Chip tone={statusTone}>{p.availability_status}</Chip>
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                          {isAway && p.awayUntil ? (
-                            <><Plane className="-mt-0.5 mr-1 inline h-3 w-3" />back {p.awayUntil}</>
+                          {isAway ? (
+                            <><Plane className="-mt-0.5 mr-1 inline h-3 w-3" />{p.availability_status}</>
                           ) : (
-                            <><MapPin className="-mt-0.5 mr-1 inline h-3 w-3" />{p.neighborhood}{typeof p.distanceKm === "number" && ` · ${p.distanceKm} km away`}</>
+                            <><MapPin className="-mt-0.5 mr-1 inline h-3 w-3" />{p.neighborhood ?? "Berlin"}</>
                           )}
                         </p>
                       </div>
@@ -263,8 +334,7 @@ function DiscoverPage() {
                     </div>
 
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      <Chip tone="lake">{p.mode}</Chip>
-                      {p.freeWindow && <Chip tone="leaf">{p.freeWindow}</Chip>}
+                      <Chip tone="lake">{p.social_mode}</Chip>
                       {p.interests.slice(0, 3).map((i) => (
                         <span
                           key={i}
@@ -463,19 +533,19 @@ function DiscoverPage() {
             </ul>
           </Section>
 
-          <Section title="Travel & holidays" subtitle="From calendar or manual status">
+          <Section title="Travel & holidays" subtitle="From manual status">
             <ul className="space-y-2">
-              {people.filter((p) => p.status === "Traveling" || p.status === "On holiday").map((p) => (
+              {otherProfiles.filter((p) => p.availability_status === "Traveling" || p.availability_status === "On holiday").map((p) => (
                 <li key={p.id} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-base">{p.emoji}</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-base">{p.emoji_avatar}</span>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold">{p.name}</p>
+                    <p className="text-sm font-semibold">{p.display_name}</p>
                     <p className="text-[11px] text-muted-foreground">
                       <Plane className="-mt-0.5 mr-1 inline h-3 w-3" />
-                      {p.status} · back {p.awayUntil ?? "soon"}
+                      {p.availability_status}
                     </p>
                   </div>
-                  <Chip tone="sun">{p.status}</Chip>
+                  <Chip tone="sun">{p.availability_status}</Chip>
                 </li>
               ))}
               <li className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-3 text-[11px] text-muted-foreground">
