@@ -19,6 +19,7 @@ import {
   Pencil,
   Check,
   Copy,
+  Camera,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -37,6 +38,7 @@ import {
 import { type EventRow, fetchAllEvents, createEvent } from "@/lib/events";
 import { fetchProfiles, type ProfileLite } from "@/lib/events";
 import { ChatThread } from "@/components/chat/ChatThread";
+import { GroupMemories } from "@/components/group/GroupMemories";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/groups/$id")({
@@ -44,7 +46,7 @@ export const Route = createFileRoute("/groups/$id")({
   component: GroupDetail,
 });
 
-type Tab = "feed" | "events" | "members" | "settings";
+type Tab = "feed" | "events" | "memories" | "members" | "settings";
 
 const PRIVACY_LABELS: Record<GroupPrivacyDB, string> = {
   public: "Public",
@@ -235,6 +237,7 @@ function GroupDetail() {
             [
               { key: "feed", label: "Chat", icon: MessageCircle },
               { key: "events", label: "Events", icon: Calendar },
+              { key: "memories", label: "Memories", icon: Camera },
               { key: "members", label: "Members", icon: ShieldCheck },
               { key: "settings", label: "Settings", icon: Settings },
             ] as { key: Tab; label: string; icon: typeof MessageCircle }[]
@@ -280,6 +283,10 @@ function GroupDetail() {
           isMember={isMember}
           onCreated={() => void load()}
         />
+      )}
+
+      {tab === "memories" && (
+        <GroupMemories groupId={group.id} groupName={group.name} memories={[]} />
       )}
 
       {tab === "members" && (

@@ -13,6 +13,7 @@ import {
   MapPin, Sparkles, Sun, CloudRain, Compass, Users, Clock, Star,
   Heart, Plus, Search, Sunset, Filter, CalendarPlus,
 } from "lucide-react";
+import { CreateEventSheet } from "@/components/event/CreateEventSheet";
 
 
 export const Route = createFileRoute("/berlin")({
@@ -49,6 +50,8 @@ function BerlinPage() {
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState<Set<string>>(new Set(["tempelhof", "klunkerkranich"]));
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createDefaults, setCreateDefaults] = useState<{ name?: string; location?: string }>({});
 
   const fetchForecast = useServerFn(getBerlinForecast);
 
@@ -101,6 +104,7 @@ function BerlinPage() {
   }
 
   return (
+    <>
     <AppShell>
       <header className="px-4 pt-6">
         <div className="flex items-center gap-2">
@@ -270,7 +274,10 @@ function BerlinPage() {
               </div>
               <p className="mt-1 font-display text-lg font-semibold">3 friends are heading to rooftops</p>
               <p className="text-[12px] text-white/85">Klunkerkranich, Monkey Bar & Viktoriapark sunset.</p>
-              <button className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-[11px] font-semibold">
+              <button
+                onClick={() => { setCreateDefaults({ name: "Sunset crew 🌇", location: "Klunkerkranich" }); setCreateOpen(true); }}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-[11px] font-semibold"
+              >
                 <Plus className="h-3.5 w-3.5" /> Start a sunset crew
               </button>
             </div>
@@ -287,7 +294,7 @@ function BerlinPage() {
           <Section title="Happening tonight">
             <ul className="space-y-2">
               {LOCAL_EVENTS.filter((e) => e.when.toLowerCase().includes("tonight") || e.when.toLowerCase().includes("thu") || e.when.toLowerCase().includes("fri")).map((e) => (
-                <EventRow key={e.id} event={e} />
+                <EventRow key={e.id} event={e} onPlanIt={() => { setCreateDefaults({ name: e.title, location: e.where }); setCreateOpen(true); }} />
               ))}
             </ul>
           </Section>
@@ -299,7 +306,7 @@ function BerlinPage() {
           <Section title="Weekend in Berlin" subtitle="Suggestions tuned to friends' availability">
             <ul className="space-y-2">
               {LOCAL_EVENTS.filter((e) => /(sat|sun|fri)/i.test(e.when)).map((e) => (
-                <EventRow key={e.id} event={e} />
+                <EventRow key={e.id} event={e} onPlanIt={() => { setCreateDefaults({ name: e.title, location: e.where }); setCreateOpen(true); }} />
               ))}
             </ul>
           </Section>
@@ -392,6 +399,15 @@ function BerlinPage() {
         </Section>
       )}
     </AppShell>
+
+    {createOpen && (
+      <CreateEventSheet
+        onClose={() => setCreateOpen(false)}
+        defaultName={createDefaults.name}
+        defaultLocation={createDefaults.location}
+      />
+    )}
+    </>
   );
 }
 
@@ -530,7 +546,7 @@ function FestivalRow({ festival: f }: { festival: FestivalEvent }) {
   );
 }
 
-function EventRow({ event }: { event: typeof LOCAL_EVENTS[number] }) {
+function EventRow({ event, onPlanIt }: { event: typeof LOCAL_EVENTS[number]; onPlanIt?: () => void }) {
   return (
     <li className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card">
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-coral/20 to-lake/20 text-xl">
@@ -544,7 +560,7 @@ function EventRow({ event }: { event: typeof LOCAL_EVENTS[number] }) {
       </div>
       <div className="flex flex-col items-end gap-1">
         <Chip tone={event.free ? "leaf" : "neutral"}>{event.free ? "Free" : event.category}</Chip>
-        <button className="rounded-full bg-coral px-3 py-1 text-[10px] font-semibold text-white">I&apos;m in</button>
+        <button onClick={onPlanIt} className="rounded-full bg-coral px-3 py-1 text-[10px] font-semibold text-white">I&apos;m in</button>
       </div>
     </li>
   );

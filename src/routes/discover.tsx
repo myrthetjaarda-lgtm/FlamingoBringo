@@ -57,13 +57,24 @@ function DiscoverPage() {
   const [myMode, setMyModeLocal] = useState<SocialMode>(
     (profile?.social_mode as SocialMode) ?? "Looking for plans",
   );
-  const myInterests: string[] = (profile?.interests as string[]) ?? [];
+  const [myInterests, setMyInterestsLocal] = useState<string[]>(
+    (profile?.interests as string[]) ?? [],
+  );
+
+  function setMyInterests(updater: (prev: string[]) => string[]) {
+    setMyInterestsLocal((prev) => {
+      const next = updater(prev);
+      if (user) savePresence.mutate({ interests: next } as Record<string, unknown>);
+      return next;
+    });
+  }
 
   // Save presence to Supabase when user changes their status/mode
   const savePresence = useMutation({
-    mutationFn: async (patch: { availability_status?: string; social_mode?: string }) => {
+    mutationFn: async (patch: Record<string, unknown>) => {
       if (!user) return;
-      await supabase.from("profiles").update(patch).eq("id", user.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("profiles") as any).update(patch).eq("id", user.id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["discover-profiles"] }),
   });
@@ -129,6 +140,7 @@ function DiscoverPage() {
   }, [query, otherProfiles]);
 
   return (
+    <>
     <AppShell>
       <header className="px-4 pt-6">
         <div className="flex items-center gap-2">
@@ -427,74 +439,13 @@ function DiscoverPage() {
       )}
 
       {tab === "interests" && (
-        <>
-          <Section title="Your interests" subtitle="Tap to toggle · pick 'always interested' for instant invites">
-            <div className="flex flex-wrap gap-2">
-              {INTERESTS.map((i) => {
-                const on = myInterests.includes(i);
-                return (
-                  <button
-                    key={i}
-                    onClick={() =>
-                      setMyInterests((prev) =>
-                        prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i],
-                      )
-                    }
-                    className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
-                      on
-                        ? "border-coral bg-coral/15 text-coral"
-                        : "border-border bg-card text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {i}
-                  </button>
-                );
-              })}
-              <button className="rounded-full border border-dashed border-border px-3 py-1.5 text-[12px] font-semibold text-muted-foreground">
-                + Custom
-              </button>
-            </div>
-          </Section>
-
-          <Section title="Invite preference" subtitle="How often should friends ping you?">
-            <div className="grid grid-cols-3 gap-2">
-              {["Always interested", "Sometimes", "Only ask"].map((l, i) => (
-                <button
-                  key={l}
-                  className={`rounded-2xl border px-3 py-3 text-[12px] font-semibold ${
-                    i === 0 ? "border-coral bg-coral/15 text-coral" : "border-border bg-card text-muted-foreground"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-          </Section>
-
-          <Section title="Privacy & visibility">
-            <div className="space-y-2">
-              {[
-                { label: "Share approximate location", on: shareLocation, set: setShareLocation, hint: "Only neighborhood — never live tracking." },
-                { label: "Show availability to friends", on: true, hint: "Busy / Free / Away — no calendar details." },
-                { label: "Appear on the social heatmap", on: true, hint: "Aggregated counts only." },
-              ].map((row, i) => (
-                <div key={i} className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card">
-                  <div>
-                    <p className="text-sm font-semibold">{row.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{row.hint}</p>
-                  </div>
-                  <button
-                    onClick={() => row.set?.(!row.on)}
-                    className={`relative h-6 w-11 rounded-full transition ${row.on ? "bg-coral" : "bg-muted"}`}
-                  >
-                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${row.on ? "left-5" : "left-0.5"}`} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Section>
-        </>
+        <InterestsTab
+          myInterests={myInterests}
+          onToggle={(i) => setMyInterests((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i])}
+          onAdd={(i) => setMyInterests((prev) => prev.includes(i) ? prev : [...prev, i])}
+        />
       )}
+
 
       {tab === "calendar" && (
         <>
@@ -576,5 +527,103 @@ function DiscoverPage() {
         defaultLocation={createDefaults.location}
       />
     )}
+    </>
+  );
+}
+
+function InterestsTab({
+  myInterests,
+  onToggle,
+  onAdd,
+}: {
+  myInterests: string[];
+  onToggle: (i: string) => void;
+  onAdd: (i: string) => void;
+}) {
+  const [customInput, setCustomInput] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
+  const { user } = useAuth();
+  const [shareLocation, setShareLocation] = useState(true);
+
+  const submit = () => {
+    const v = customInput.trim();
+    if (v) { onAdd(v); setCustomInput(""); setShowCustom(false); }
+  };
+
+  return (
+    <>
+      <Section title="Your interests" subtitle="Tap to toggle · auto-saved">
+        <div className="flex flex-wrap gap-2">
+          {INTERESTS.map((i) => {
+            const on = myInterests.includes(i);
+            return (
+              <button
+                key={i}
+                onClick={() => onToggle(i)}
+                className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                  on ? "border-coral bg-coral/15 text-coral" : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {i}
+              </button>
+            );
+          })}
+          {myInterests.filter((i) => !(INTERESTS as readonly string[]).includes(i)).map((i) => (
+            <button
+              key={i}
+              onClick={() => onToggle(i)}
+              className="rounded-full border border-coral bg-coral/15 px-3 py-1.5 text-[12px] font-semibold text-coral"
+            >
+              {i}
+            </button>
+          ))}
+          {showCustom ? (
+            <div className="flex items-center gap-1">
+              <input
+                autoFocus
+                value={customInput}
+                onChange={(e) => setCustomInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") setShowCustom(false); }}
+                maxLength={30}
+                placeholder="Type & press Enter"
+                className="rounded-full border border-coral bg-card px-3 py-1 text-[12px] outline-none w-36"
+              />
+              <button onClick={submit} className="rounded-full bg-coral px-2.5 py-1 text-[11px] font-semibold text-white">Add</button>
+              <button onClick={() => setShowCustom(false)} className="rounded-full bg-muted px-2 py-1 text-[11px] font-semibold text-muted-foreground">✕</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCustom(true)}
+              className="rounded-full border border-dashed border-border px-3 py-1.5 text-[12px] font-semibold text-muted-foreground"
+            >
+              + Custom
+            </button>
+          )}
+        </div>
+      </Section>
+
+      <Section title="Privacy & visibility">
+        <div className="space-y-2">
+          {[
+            { label: "Share approximate location", on: shareLocation, set: setShareLocation, hint: "Only neighborhood — never live tracking." },
+            { label: "Show availability to friends", on: true, hint: "Busy / Free / Away — no calendar details." },
+            { label: "Appear on the social heatmap", on: true, hint: "Aggregated counts only." },
+          ].map((row, idx) => (
+            <div key={idx} className="flex items-start justify-between gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card">
+              <div>
+                <p className="text-sm font-semibold">{row.label}</p>
+                <p className="text-[11px] text-muted-foreground">{row.hint}</p>
+              </div>
+              <button
+                onClick={() => row.set?.(!row.on)}
+                className={`relative h-6 w-11 rounded-full transition ${row.on ? "bg-coral" : "bg-muted"}`}
+              >
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${row.on ? "left-5" : "left-0.5"}`} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </Section>
+    </>
   );
 }
