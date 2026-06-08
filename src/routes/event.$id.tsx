@@ -11,6 +11,7 @@ import {
   type ProfileFull,
   fetchEvent,
   fetchProfilesFull,
+  fetchRsvps,
   updateEvent,
   deleteEvent,
 } from "@/lib/events";
@@ -22,6 +23,8 @@ import { RsvpSection } from "@/components/event/RsvpSection";
 import { ContributionTable } from "@/components/event/ContributionTable";
 import { FindADate } from "@/components/event/FindADate";
 import { InviteSheet } from "@/components/event/InviteSheet";
+import { TravelMeetup } from "@/components/event/TravelMeetup";
+import { Recipes } from "@/components/event/Recipes";
 import { AttendeesSheet } from "@/components/event/AttendeesSheet";
 import { CalendarExport } from "@/components/event/CalendarExport";
 import { ChatThread } from "@/components/chat/ChatThread";
@@ -49,6 +52,7 @@ function EventPage() {
   const [editingMeta, setEditingMeta] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [attendeesOpen, setAttendeesOpen] = useState(false);
+  const [comingCount, setComingCount] = useState(1);
 
 
   useEffect(() => {
@@ -64,9 +68,13 @@ function EventPage() {
           return;
         }
         setEvent(ev);
-        const profiles = await fetchProfilesFull([ev.organizer_id]);
+        const [profiles, rsvps] = await Promise.all([
+          fetchProfilesFull([ev.organizer_id]),
+          fetchRsvps(ev.id),
+        ]);
         if (cancel) return;
         setOrganizer(profiles.get(ev.organizer_id) ?? null);
+        setComingCount(Math.max(1, rsvps.filter((r) => r.status === "coming").length));
         setLoading(false);
       })
       .catch(() => {
@@ -257,6 +265,10 @@ function EventPage() {
 
 
       <ContributionTable eventId={event.id} />
+
+      {event.starts_at && <TravelMeetup event={event} />}
+
+      <Recipes attendeeCount={comingCount} />
 
       <Section title="Conversation" subtitle="Everyone in one live thread">
         <ChatThread

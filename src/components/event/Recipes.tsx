@@ -4,11 +4,9 @@ import {
 } from "lucide-react";
 import { Section, Chip } from "@/components/AppShell";
 import { recipes, recipeCategories, type Recipe, type RecipeCategory } from "@/data/recipes";
-import { attendees } from "@/data/sample";
 
-const PEOPLE = attendees.filter((a) => a.rsvp === "coming").length;
-
-export function Recipes() {
+export function Recipes({ attendeeCount = 1 }: { attendeeCount?: number }) {
+  const PEOPLE = Math.max(1, attendeeCount);
   const [cat, setCat] = useState<RecipeCategory | "All">("All");
   const [favs, setFavs] = useState<Record<string, boolean>>(
     () => Object.fromEntries(recipes.filter((r) => r.favorite).map((r) => [r.id, true])),
@@ -72,6 +70,7 @@ export function Recipes() {
           <RecipeCard
             key={r.id}
             recipe={r}
+            people={PEOPLE}
             isFav={!!favs[r.id]}
             isClaimed={!!claimed[r.id]}
             onFav={() => toggleFav(r.id)}
@@ -97,15 +96,16 @@ function CatChip({ active, onClick, label }: { active: boolean; onClick: () => v
 }
 
 function RecipeCard({
-  recipe, isFav, isClaimed, onFav, onClaim,
+  recipe, people, isFav, isClaimed, onFav, onClaim,
 }: {
   recipe: Recipe;
+  people: number;
   isFav: boolean;
   isClaimed: boolean;
   onFav: () => void;
   onClaim: () => void;
 }) {
-  const scale = Math.max(1, Math.ceil(PEOPLE / recipe.servings));
+  const scale = Math.max(1, Math.ceil(people / recipe.servings));
   return (
     <li className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-card">
       <div className="relative h-36 w-full overflow-hidden">
@@ -150,7 +150,7 @@ function RecipeCard({
           </span>
           <span>·</span>
           <span>
-            base <b>{recipe.servings}</b> → scaled <b className="text-coral">×{scale}</b> for {PEOPLE}
+            base <b>{recipe.servings}</b> → scaled <b className="text-coral">×{scale}</b> for {people}
           </span>
         </div>
 
