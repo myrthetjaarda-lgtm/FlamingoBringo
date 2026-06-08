@@ -102,8 +102,8 @@ function ProfilePage() {
       return;
     }
     setSaving(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from("profiles") as any)
+    const { error } = await supabase
+      .from("profiles")
       .update({
         display_name: displayName.trim().slice(0, 60) || "Friend",
         neighborhood: neighborhood.trim().slice(0, 80) || null,

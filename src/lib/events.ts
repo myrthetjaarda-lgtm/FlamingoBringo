@@ -113,8 +113,7 @@ export async function fetchBringItems(eventId: string) {
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((data as any[]) as BringItemRow[]) ?? [];
+  return (data as BringItemRow[]) ?? [];
 }
 
 // Items the user has claimed across all events (with the event for context).
@@ -125,8 +124,7 @@ export async function fetchMyClaimedItems(userId: string) {
     .eq("claimed_by", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((data ?? []) as any[]) as (BringItemRow & {
+  return (data ?? []) as (BringItemRow & {
     events: { id: string; name: string; starts_at: string | null } | null;
   })[];
 }
@@ -170,8 +168,7 @@ export async function fetchProfilesFull(ids: string[]) {
     .in("id", ids);
   if (error) throw error;
   const map = new Map<string, ProfileFull>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ((data as any[]) as ProfileFull[])?.forEach((p) => map.set(p.id, p));
+  (data as ProfileFull[] | null)?.forEach((p) => map.set(p.id, p));
   return map;
 }
 
@@ -250,8 +247,7 @@ export async function addBringItem(input: {
   qty_needed?: number;
   is_byo?: boolean;
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase.from("bring_items") as any).insert({
+  const { error } = await supabase.from("bring_items").insert({
     event_id: input.event_id,
     created_by: input.created_by,
     name: input.name,

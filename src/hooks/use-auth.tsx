@@ -44,8 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     if (data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setProfile(data as any as Profile);
+      setProfile(data as Profile);
       return;
     }
 
@@ -64,8 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
       .maybeSingle();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setProfile((created as any as Profile | null) ?? null);
+    setProfile((created as Profile | null) ?? null);
   };
 
   useEffect(() => {

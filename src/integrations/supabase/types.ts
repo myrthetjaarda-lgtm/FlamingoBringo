@@ -58,6 +58,7 @@ export type Database = {
           has_this: boolean
           id: string
           ingredients: string | null
+          is_byo: boolean
           name: string
           qty_needed: number
           quantity: string | null
@@ -75,6 +76,7 @@ export type Database = {
           has_this?: boolean
           id?: string
           ingredients?: string | null
+          is_byo?: boolean
           name: string
           qty_needed?: number
           quantity?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           has_this?: boolean
           id?: string
           ingredients?: string | null
+          is_byo?: boolean
           name?: string
           qty_needed?: number
           quantity?: string | null
@@ -321,6 +324,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          availability_status: string
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -328,6 +332,7 @@ export type Database = {
           dietary: string[]
           display_name: string
           emoji_avatar: string
+          equipment: string[]
           facebook: string | null
           id: string
           instagram: string | null
@@ -335,9 +340,11 @@ export type Database = {
           neighborhood: string | null
           phone: string | null
           show_phone: boolean
+          social_mode: string
           updated_at: string
         }
         Insert: {
+          availability_status?: string
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -345,6 +352,7 @@ export type Database = {
           dietary?: string[]
           display_name?: string
           emoji_avatar?: string
+          equipment?: string[]
           facebook?: string | null
           id: string
           instagram?: string | null
@@ -352,9 +360,11 @@ export type Database = {
           neighborhood?: string | null
           phone?: string | null
           show_phone?: boolean
+          social_mode?: string
           updated_at?: string
         }
         Update: {
+          availability_status?: string
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -362,6 +372,7 @@ export type Database = {
           dietary?: string[]
           display_name?: string
           emoji_avatar?: string
+          equipment?: string[]
           facebook?: string | null
           id?: string
           instagram?: string | null
@@ -369,6 +380,7 @@ export type Database = {
           neighborhood?: string | null
           phone?: string | null
           show_phone?: boolean
+          social_mode?: string
           updated_at?: string
         }
         Relationships: []

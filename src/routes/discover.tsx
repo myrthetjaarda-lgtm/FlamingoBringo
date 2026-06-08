@@ -64,17 +64,16 @@ function DiscoverPage() {
   function setMyInterests(updater: (prev: string[]) => string[]) {
     setMyInterestsLocal((prev) => {
       const next = updater(prev);
-      if (user) savePresence.mutate({ interests: next } as Record<string, unknown>);
+      if (user) savePresence.mutate({ interests: next });
       return next;
     });
   }
 
   // Save presence to Supabase when user changes their status/mode
   const savePresence = useMutation({
-    mutationFn: async (patch: Record<string, unknown>) => {
+    mutationFn: async (patch: Partial<{ availability_status: string; social_mode: string; interests: string[] }>) => {
       if (!user) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("profiles") as any).update(patch).eq("id", user.id);
+      await supabase.from("profiles").update(patch).eq("id", user.id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["discover-profiles"] }),
   });
