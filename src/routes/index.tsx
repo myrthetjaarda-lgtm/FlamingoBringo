@@ -95,25 +95,21 @@ function HomePage() {
   return (
     <AppShell>
 
-      <header className="flex items-center justify-between px-4 pt-6">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl" aria-hidden>🦩</span>
-          <div>
-            <p className="font-display text-lg font-semibold leading-none">FlamingoBringo</p>
-            <p className="text-[11px] text-muted-foreground">Plan together. Bring together.</p>
-          </div>
+      <header className="flex items-start justify-between px-4 pt-6">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            🦩 FlamingoBringo
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-semibold leading-tight text-balance">
+            Hi {firstName} <span className="inline-block animate-wiggle">👋</span>
+            <br />
+            <span className="text-coral">Sunnier days</span> are coming.
+          </h1>
         </div>
+        <Link to="/profile" className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-coral/15 text-xl shadow-soft">
+          {profile?.emoji_avatar ?? "🦩"}
+        </Link>
       </header>
-
-
-
-      <div className="px-4 pt-5">
-        <h1 className="font-display text-3xl font-semibold leading-tight text-balance">
-          Hi {firstName} <span className="inline-block animate-wiggle">👋</span>
-          <br />
-          <span className="text-coral">Sunnier days</span> are coming.
-        </h1>
-      </div>
 
       <Section
         title="Your events"

@@ -1,6 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
 import { BottomNav } from "./BottomNav";
 import { useAuth } from "@/hooks/use-auth";
 import { OnboardingSheet } from "./OnboardingSheet";
@@ -13,7 +11,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gradient-warm">
       <div className="mx-auto min-h-screen max-w-md bg-background/40 pb-32">
-        <IdentityBar />
         {children}
       </div>
       <BottomNav />
@@ -21,33 +18,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         open={needsOnboarding && !dismissedOnboarding}
         onClose={() => setDismissedOnboarding(true)}
       />
-    </div>
-  );
-}
-
-function IdentityBar() {
-  const { user, profile, signOut } = useAuth();
-  if (!user) return null;
-  const name = profile?.display_name ?? "Friend";
-  const emoji = profile?.emoji_avatar ?? "🦩";
-  return (
-    <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/60 bg-card/85 px-3 py-2 backdrop-blur">
-      <Link to="/profile" className="flex min-w-0 items-center gap-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-coral/15 text-base">
-          {emoji}
-        </span>
-        <div className="min-w-0 leading-tight">
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Signed in as</p>
-          <p className="truncate text-xs font-semibold">{name}</p>
-        </div>
-      </Link>
-      <button
-        onClick={signOut}
-        aria-label="Sign out"
-        className="flex h-8 items-center gap-1 rounded-full border border-border/60 bg-background px-2.5 text-[11px] font-semibold text-muted-foreground transition hover:text-coral"
-      >
-        <LogOut className="h-3 w-3" /> Sign out
-      </button>
     </div>
   );
 }
