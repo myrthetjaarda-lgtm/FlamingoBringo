@@ -81,11 +81,23 @@ function FriendsPage() {
 
   return (
     <AppShell>
-      <header className="px-4 pt-6">
+      <header className="px-4 pt-8 pb-2">
         <h1 className="font-display text-3xl font-semibold">Your people</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-0.5 text-sm text-muted-foreground">
           Groups & friends — invite a whole crew in one tap.
         </p>
+        {(!groupsLoading || !friendsLoading) && (
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="rounded-2xl border border-border/60 bg-card p-3 shadow-card text-center">
+              <p className="font-display text-2xl font-bold">{groups.length}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Groups</p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card p-3 shadow-card text-center">
+              <p className="font-display text-2xl font-bold">{friends.length}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Friends</p>
+            </div>
+          </div>
+        )}
       </header>
 
       <Section
@@ -173,13 +185,13 @@ function FriendsPage() {
                 key={f.id}
                 className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-card"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-lake/15 text-lg">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-coral/20 to-lake/20 text-xl">
                   {f.emoji_avatar}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold">{f.display_name}</p>
+                  <p className="truncate font-semibold">{f.display_name}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {f.sharedEvents} shared event{f.sharedEvents === 1 ? "" : "s"}
+                    🎉 {f.sharedEvents} shared event{f.sharedEvents === 1 ? "" : "s"}
                   </p>
                 </div>
                 <button
@@ -189,9 +201,9 @@ function FriendsPage() {
                     );
                     window.open(`https://wa.me/?text=${text}`, "_blank");
                   }}
-                  className="rounded-full bg-coral/15 px-3 py-1.5 text-[11px] font-semibold text-coral"
+                  className="shrink-0 rounded-full bg-[#25D366]/15 px-3 py-1.5 text-[11px] font-semibold text-[#128c4a]"
                 >
-                  Ping
+                  💬 Ping
                 </button>
               </li>
             ))}

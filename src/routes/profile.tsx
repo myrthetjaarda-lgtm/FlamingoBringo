@@ -391,58 +391,81 @@ function ProfilePage() {
             </div>
           </div>
         ) : (
-          <>
-            <h1 className="font-display text-2xl font-semibold">
-              {profile?.display_name ?? "Friend"}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {[profile?.neighborhood, user.email].filter(Boolean).join(" · ")}
-            </p>
-            {profile?.phone && profile?.show_phone && (
-              <p className="mt-1 text-xs text-muted-foreground">📞 {profile.phone}</p>
-            )}
-            {profile?.default_location && (
-              <p className="text-xs text-muted-foreground">📍 {profile.default_location}</p>
-            )}
-            {(profile?.instagram || profile?.facebook) && (
-              <div className="mt-2">
-                <SocialLinks instagram={profile?.instagram} facebook={profile?.facebook} />
-              </div>
-            )}
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {profile?.availability_status && (
-                <Chip tone="coral">{profile.availability_status}</Chip>
-              )}
-              {profile?.social_mode && (
-                <Chip tone="lake">{profile.social_mode}</Chip>
+          <div className="space-y-3">
+            {/* Name + location */}
+            <div>
+              <h1 className="font-display text-2xl font-semibold">
+                {profile?.display_name ?? "Friend"}
+              </h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {[profile?.neighborhood ? `📍 ${profile.neighborhood}` : null, user.email]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+              {(profile?.instagram || profile?.facebook) && (
+                <div className="mt-2">
+                  <SocialLinks instagram={profile?.instagram} facebook={profile?.facebook} />
+                </div>
               )}
             </div>
-            {profile?.interests && profile.interests.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {profile.interests.map((i) => (
-                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
-                    {i}
-                  </span>
-                ))}
+
+            {/* Vibe card */}
+            {(profile?.availability_status || profile?.social_mode) && (
+              <div className="rounded-2xl bg-gradient-to-r from-coral/10 to-lake/10 border border-border/60 p-3">
+                {profile?.availability_status && (
+                  <p className="text-xs font-semibold text-coral">{profile.availability_status}</p>
+                )}
+                {profile?.social_mode && (
+                  <p className="mt-0.5 text-sm font-semibold">{profile.social_mode}</p>
+                )}
               </div>
             )}
-            {profile?.dietary && profile.dietary.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {profile.dietary.map((d) => (
-                  <Chip key={d} tone="leaf">🌱 {d}</Chip>
-                ))}
-              </div>
-            )}
+
+            {/* Bio */}
             {profile?.bio ? (
-              <p className="mt-3 rounded-2xl border border-border/60 bg-card p-3 text-sm shadow-card">
+              <p className="rounded-2xl border border-border/60 bg-card p-3 text-sm leading-relaxed shadow-card">
                 {profile.bio}
               </p>
             ) : (
-              <p className="mt-3 rounded-2xl border border-dashed border-border/60 p-3 text-xs text-muted-foreground">
-                No bio yet — tap <b>Edit profile</b> to add one.
-              </p>
+              <button
+                onClick={() => setEditing(true)}
+                className="w-full rounded-2xl border border-dashed border-border/60 p-3 text-xs text-muted-foreground text-left"
+              >
+                + Add a bio
+              </button>
             )}
-          </>
+
+            {/* Interests */}
+            {profile?.interests && profile.interests.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Into</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.interests.map((i) => (
+                    <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                      {i}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Dietary */}
+            {profile?.dietary && profile.dietary.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Dietary</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.dietary.map((d) => (
+                    <Chip key={d} tone="leaf">🌱 {d}</Chip>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Contact */}
+            {profile?.phone && profile?.show_phone && (
+              <p className="text-xs text-muted-foreground">📞 {profile.phone}</p>
+            )}
+          </div>
         )}
       </div>
 
