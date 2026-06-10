@@ -175,64 +175,73 @@ function GroupDetail() {
 
   return (
     <AppShell>
-      <header className="px-4 pt-6">
-        <Link
-          to="/groups"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Groups
-        </Link>
+      {/* Hero banner */}
+      <div className="relative h-40 w-full bg-gradient-to-br from-lake/60 via-lake/30 to-coral/20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/60" />
+        {/* Back */}
+        <div className="absolute left-4 top-3">
+          <Link
+            to="/groups"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </div>
+        {/* Group emoji centered */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-7xl drop-shadow-lg">{group.emoji}</span>
+        </div>
+      </div>
 
-        <div className="mt-3 rounded-3xl border border-border/60 bg-card p-5 shadow-card">
-          <div className="flex items-start gap-3">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-3xl">
-              {group.emoji}
-            </span>
-            <div className="min-w-0 flex-1">
-              <h1 className="font-display text-2xl font-semibold">{group.name}</h1>
-              {group.tagline && <p className="text-xs text-muted-foreground">{group.tagline}</p>}
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                <Chip tone="lake">
-                  <PrivacyIcon className="h-3.5 w-3.5" /> {PRIVACY_LABELS[group.privacy]}
-                </Chip>
-                <Chip tone="neutral">👥 {members.length}</Chip>
-                {events.length > 0 && <Chip tone="coral">📅 {events.length} events</Chip>}
-              </div>
+      <header className="px-4 pt-4">
+        {/* Name + meta */}
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="font-display text-2xl font-semibold">{group.name}</h1>
+            {group.tagline && <p className="mt-0.5 text-sm text-muted-foreground">{group.tagline}</p>}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <Chip tone="lake">
+                <PrivacyIcon className="h-3 w-3" /> {PRIVACY_LABELS[group.privacy]}
+              </Chip>
+              <Chip tone="neutral">👥 {members.length} members</Chip>
+              {events.length > 0 && <Chip tone="coral">📅 {events.length} events</Chip>}
             </div>
-          </div>
-
-          <div className="mt-4 flex gap-2">
-            {!isMember ? (
-              <button
-                onClick={handleJoin}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-coral px-3 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
-              >
-                <UserPlus className="h-4 w-4" /> Join group
-              </button>
-            ) : (
-              <button
-                onClick={() =>
-                  void navigator.clipboard
-                    .writeText(window.location.href)
-                    .then(() => toast.success("Invite link copied"))
-                }
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-coral px-3 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
-              >
-                <Copy className="h-4 w-4" /> Copy invite link
-              </button>
-            )}
-            {isMember && (
-              <button
-                onClick={() => setTab("events")}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-lake/15 px-3 py-2 text-xs font-semibold text-lake"
-              >
-                <Calendar className="h-4 w-4" /> Events
-              </button>
-            )}
           </div>
         </div>
 
-        <div className="mt-4 -mx-1 flex gap-1 overflow-x-auto px-1">
+        {/* Actions */}
+        <div className="mt-3 flex gap-2">
+          {!isMember ? (
+            <button
+              onClick={handleJoin}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-coral px-3 py-2.5 text-xs font-semibold text-primary-foreground shadow-soft"
+            >
+              <UserPlus className="h-4 w-4" /> Join group
+            </button>
+          ) : (
+            <button
+              onClick={() =>
+                void navigator.clipboard
+                  .writeText(window.location.href)
+                  .then(() => toast.success("Invite link copied"))
+              }
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-coral px-3 py-2.5 text-xs font-semibold text-primary-foreground shadow-soft"
+            >
+              <Copy className="h-4 w-4" /> Copy invite link
+            </button>
+          )}
+          {isMember && (
+            <button
+              onClick={() => setTab("events")}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-2.5 text-xs font-semibold shadow-card"
+            >
+              <Calendar className="h-4 w-4 text-lake" /> Events
+            </button>
+          )}
+        </div>
+
+        {/* Tabs */}
+        <div className="mt-4 -mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
           {(
             [
               { key: "feed", label: "Chat", icon: MessageCircle },
@@ -248,7 +257,7 @@ function GroupDetail() {
                 key={key}
                 onClick={() => setTab(key)}
                 className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                  active ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+                  active ? "bg-coral text-white shadow-soft" : "bg-muted text-muted-foreground"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" /> {label}

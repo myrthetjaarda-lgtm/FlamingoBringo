@@ -157,21 +157,21 @@ export function EveryoneBrings({ eventId }: { eventId: string }) {
 
   return (
     <Section
-      title="Everyone brings their own"
-      subtitle="Personal essentials — check off what you're packing"
+      title="Pack your bag"
+      subtitle="Personal gear — check off what you're bringing"
       action={
         <button
           onClick={() => setAdding((v) => !v)}
           className="inline-flex items-center gap-1 rounded-full bg-lake px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-soft"
         >
-          <Plus className="h-3.5 w-3.5" /> Add
+          <Plus className="h-3.5 w-3.5" /> Add item
         </button>
       }
     >
       <div className="rounded-3xl border border-lake/30 bg-lake/5 p-4 shadow-card">
-        <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-lake">
-          <Backpack className="h-4 w-4" />
-          Pack list
+        <div className="mb-3 flex items-center gap-2">
+          <Backpack className="h-4 w-4 text-lake" />
+          <p className="text-xs font-semibold text-lake">Everyone brings their own gear</p>
         </div>
 
         {adding && (
@@ -290,7 +290,7 @@ export function EveryoneBrings({ eventId }: { eventId: string }) {
         )}
 
         <p className="mt-3 text-[11px] text-muted-foreground">
-          Anyone can add. Check the box for the items you'll bring yourself ☀️
+          ✅ Tick the box once you've packed it — others can see who's got what covered.
         </p>
       </div>
     </Section>
