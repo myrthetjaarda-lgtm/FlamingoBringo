@@ -21,6 +21,7 @@ import { BringMaster } from "@/components/event/BringMaster";
 import { EveryoneBrings } from "@/components/event/EveryoneBrings";
 import { RsvpSection } from "@/components/event/RsvpSection";
 import { ContributionTable } from "@/components/event/ContributionTable";
+import { GiftWishlist } from "@/components/event/GiftWishlist";
 import { FindADate } from "@/components/event/FindADate";
 import { InviteSheet } from "@/components/event/InviteSheet";
 import { TravelMeetup } from "@/components/event/TravelMeetup";
@@ -259,6 +260,8 @@ function EventPage() {
       <BringMaster eventId={event.id} isOrganizer={isOrganizer} />
 
       <ContributionTable eventId={event.id} />
+
+      <GiftWishlist eventId={event.id} />
 
       {event.starts_at && <TravelMeetup event={event} />}
 

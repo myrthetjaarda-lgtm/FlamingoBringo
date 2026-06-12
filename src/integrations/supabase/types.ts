@@ -112,6 +112,86 @@ export type Database = {
           },
         ]
       }
+      gift_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          event_id: string
+          gift_id: string
+          id: string
+          is_buyer: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          event_id: string
+          gift_id: string
+          id?: string
+          is_buyer?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          event_id?: string
+          gift_id?: string
+          id?: string
+          is_buyer?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gift_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          emoji: string
+          event_id: string
+          id: string
+          name: string
+          note: string | null
+          price: number | null
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          emoji?: string
+          event_id: string
+          id?: string
+          name: string
+          note?: string | null
+          price?: number | null
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          emoji?: string
+          event_id?: string
+          id?: string
+          name?: string
+          note?: string | null
+          price?: number | null
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       date_options: {
         Row: {
           created_at: string
