@@ -10,7 +10,35 @@ export type EventRow = {
   event_type: string | null;
   group_id: string | null;
   created_at: string;
+  // Football match details (only meaningful when event_type === "football")
+  home_team: string | null;
+  away_team: string | null;
+  home_score: number | null;
+  away_score: number | null;
 };
+
+// Selectable event types with their emoji. event_type is a freeform text column,
+// so this list drives the picker UI without needing a DB enum.
+export type EventTypeMeta = { value: string; label: string; emoji: string };
+
+export const EVENT_TYPES: EventTypeMeta[] = [
+  { value: "birthday", label: "Birthday", emoji: "🎂" },
+  { value: "football", label: "Football", emoji: "⚽" },
+  { value: "gym", label: "Gym buddies", emoji: "💪" },
+  { value: "cooking", label: "Cooking", emoji: "👨‍🍳" },
+  { value: "picnic", label: "Picnic", emoji: "🧺" },
+  { value: "bbq", label: "BBQ", emoji: "🔥" },
+  { value: "party", label: "Party", emoji: "🎉" },
+  { value: "dinner", label: "Dinner", emoji: "🍽️" },
+  { value: "trip", label: "Trip", emoji: "🧳" },
+  { value: "other", label: "Other", emoji: "📅" },
+];
+
+export const eventTypeEmoji = (t: string | null | undefined) =>
+  EVENT_TYPES.find((e) => e.value === t)?.emoji ?? "📅";
+
+export const eventTypeLabel = (t: string | null | undefined) =>
+  EVENT_TYPES.find((e) => e.value === t)?.label ?? null;
 
 export type BringItemRow = {
   id: string;
@@ -58,19 +86,13 @@ export type ProfileFull = {
   show_phone: boolean;
   default_location: string | null;
   equipment: string[];
+  paypal: string | null;
+  iban: string | null;
+  payment_note: string | null;
 };
 
 // Common staples that people usually already have at home.
-export const STAPLES = [
-  "oil",
-  "salt",
-  "pepper",
-  "butter",
-  "flour",
-  "sugar",
-  "water",
-  "ice",
-];
+export const STAPLES = ["oil", "salt", "pepper", "butter", "flour", "sugar", "water", "ice"];
 
 export function isStaple(name: string) {
   const n = name.toLowerCase();
@@ -78,11 +100,7 @@ export function isStaple(name: string) {
 }
 
 export async function fetchEvent(id: string) {
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const { data, error } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
   return (data as EventRow | null) ?? null;
 }
@@ -163,7 +181,7 @@ export async function fetchProfilesFull(ids: string[]) {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, emoji_avatar, bio, dietary, phone, instagram, facebook, show_phone, default_location, equipment",
+      "id, display_name, emoji_avatar, bio, dietary, phone, instagram, facebook, show_phone, default_location, equipment, paypal, iban, payment_note",
     )
     .in("id", ids);
   if (error) throw error;
@@ -267,7 +285,14 @@ export async function updateBringItem(
   patch: Partial<
     Pick<
       BringItemRow,
-      "name" | "emoji" | "quantity" | "ingredients" | "required" | "category" | "has_this" | "qty_needed"
+      | "name"
+      | "emoji"
+      | "quantity"
+      | "ingredients"
+      | "required"
+      | "category"
+      | "has_this"
+      | "qty_needed"
     >
   >,
 ) {
@@ -428,10 +453,7 @@ export async function fetchDateOptions(eventId: string) {
 }
 
 export async function fetchDateVotes(eventId: string) {
-  const { data, error } = await supabase
-    .from("date_votes")
-    .select("*")
-    .eq("event_id", eventId);
+  const { data, error } = await supabase.from("date_votes").select("*").eq("event_id", eventId);
   if (error) throw error;
   return (data as DateVoteRow[]) ?? [];
 }

@@ -14,32 +14,81 @@ export const Route = createFileRoute("/profile")({
 });
 
 const BERLIN_NEIGHBORHOODS = [
-  "Mitte", "Prenzlauer Berg", "Friedrichshain", "Kreuzberg", "Neukölln",
-  "Tempelhof", "Schöneberg", "Charlottenburg", "Wilmersdorf", "Zehlendorf",
-  "Steglitz", "Wedding", "Pankow", "Weißensee", "Lichtenberg",
-  "Treptow", "Köpenick", "Spandau", "Marzahn", "Reinickendorf",
+  "Mitte",
+  "Prenzlauer Berg",
+  "Friedrichshain",
+  "Kreuzberg",
+  "Neukölln",
+  "Tempelhof",
+  "Schöneberg",
+  "Charlottenburg",
+  "Wilmersdorf",
+  "Zehlendorf",
+  "Steglitz",
+  "Wedding",
+  "Pankow",
+  "Weißensee",
+  "Lichtenberg",
+  "Treptow",
+  "Köpenick",
+  "Spandau",
+  "Marzahn",
+  "Reinickendorf",
 ];
 
 const DIETARY_OPTIONS = [
-  "Vegetarian", "Vegan", "Gluten-free", "Dairy-free",
-  "Nut allergy", "Halal", "Kosher", "Pescatarian",
+  "Vegetarian",
+  "Vegan",
+  "Gluten-free",
+  "Dairy-free",
+  "Nut allergy",
+  "Halal",
+  "Kosher",
+  "Pescatarian",
 ];
 
 const INTEREST_OPTIONS = [
-  "BBQs", "Lakes", "Open-air cinema", "Beer gardens", "Picnics",
-  "Clubs", "Festivals", "Markets", "Hiking", "Board games",
-  "Sports", "Volleyball", "Swimming", "Dancing", "Cycling",
-  "Museums", "Karaoke", "Food markets", "Tech meetups", "Cinema",
+  "BBQs",
+  "Lakes",
+  "Open-air cinema",
+  "Beer gardens",
+  "Picnics",
+  "Clubs",
+  "Festivals",
+  "Markets",
+  "Hiking",
+  "Board games",
+  "Sports",
+  "Volleyball",
+  "Swimming",
+  "Dancing",
+  "Cycling",
+  "Museums",
+  "Karaoke",
+  "Food markets",
+  "Tech meetups",
+  "Cinema",
 ];
 
 const AVAILABILITY_OPTIONS = [
-  "Open for plans", "Free this weekend", "In Berlin",
-  "Working remotely", "Busy", "Traveling", "On holiday",
+  "Open for plans",
+  "Free this weekend",
+  "In Berlin",
+  "Working remotely",
+  "Busy",
+  "Traveling",
+  "On holiday",
 ];
 
 const SOCIAL_MODE_OPTIONS = [
-  "Looking for plans", "Lake mode ☀️", "Chill only", "Party mode",
-  "Outdoor mode", "Sports mood", "Quiet weekend", "Family time",
+  "Looking for plans",
+  "Lake mode ☀️",
+  "Chill only",
+  "Party mode",
+  "Outdoor mode",
+  "Sports mood",
+  "Quiet weekend",
+  "Family time",
 ];
 
 const EMOJI_POOL = ["🦩", "🍉", "🌻", "🥖", "🍑", "🌮", "🥑", "🧁", "🐝", "🐙", "🦊", "🌈"];
@@ -58,6 +107,9 @@ function ProfilePage() {
   const [instagram, setInstagram] = useState("");
   const [facebook, setFacebook] = useState("");
   const [showPhone, setShowPhone] = useState(true);
+  const [paypal, setPaypal] = useState("");
+  const [iban, setIban] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
   const [dietary, setDietary] = useState<string[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
   const [availabilityStatus, setAvailabilityStatus] = useState("In Berlin");
@@ -74,6 +126,9 @@ function ProfilePage() {
     setInstagram(profile.instagram ?? "");
     setFacebook(profile.facebook ?? "");
     setShowPhone(profile.show_phone ?? true);
+    setPaypal(profile.paypal ?? "");
+    setIban(profile.iban ?? "");
+    setPaymentNote(profile.payment_note ?? "");
     setDietary(profile.dietary ?? []);
     setInterests(profile.interests ?? []);
     setAvailabilityStatus(profile.availability_status ?? "In Berlin");
@@ -114,6 +169,9 @@ function ProfilePage() {
         instagram: instagram.trim().slice(0, 100) || null,
         facebook: facebook.trim().slice(0, 200) || null,
         show_phone: showPhone,
+        paypal: paypal.trim().slice(0, 120) || null,
+        iban: iban.trim().slice(0, 40) || null,
+        payment_note: paymentNote.trim().slice(0, 120) || null,
         dietary,
         interests,
         availability_status: availabilityStatus,
@@ -182,7 +240,11 @@ function ProfilePage() {
                     disabled={saving}
                     className="inline-flex items-center gap-1 rounded-full bg-coral px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
                   >
-                    {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                    {saving ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="h-3 w-3" />
+                    )}
                     Save
                   </button>
                 </>
@@ -239,9 +301,7 @@ function ProfilePage() {
                     type="button"
                     onClick={() => setNeighborhood(neighborhood === n ? "" : n)}
                     className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
-                      neighborhood === n
-                        ? "bg-coral text-white"
-                        : "bg-muted text-muted-foreground"
+                      neighborhood === n ? "bg-coral text-white" : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {n}
@@ -290,6 +350,44 @@ function ProfilePage() {
               />
             </label>
 
+            <div className="rounded-2xl border border-border/60 bg-card p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-coral">
+                💸 Settle up
+              </p>
+              <p className="mt-0.5 mb-2 text-[11px] text-muted-foreground">
+                Shown on shared receipts so people can pay you back.
+              </p>
+              <div className="space-y-2">
+                <Field label="PayPal" hint="PayPal.me link or email">
+                  <input
+                    value={paypal}
+                    onChange={(e) => setPaypal(e.target.value)}
+                    maxLength={120}
+                    placeholder="paypal.me/you"
+                    className="w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm outline-none focus:border-coral"
+                  />
+                </Field>
+                <Field label="IBAN / bank account">
+                  <input
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value)}
+                    maxLength={40}
+                    placeholder="NL00 BANK 0000 0000 00"
+                    className="w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm outline-none focus:border-coral"
+                  />
+                </Field>
+                <Field label="Payment note" hint="e.g. account holder name">
+                  <input
+                    value={paymentNote}
+                    onChange={(e) => setPaymentNote(e.target.value)}
+                    maxLength={120}
+                    placeholder="Name on the account"
+                    className="w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm outline-none focus:border-coral"
+                  />
+                </Field>
+              </div>
+            </div>
+
             <Field label="Bio">
               <textarea
                 value={bio}
@@ -309,7 +407,9 @@ function ProfilePage() {
                     type="button"
                     onClick={() => setAvailabilityStatus(s)}
                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
-                      availabilityStatus === s ? "bg-coral/20 text-coral" : "bg-muted text-muted-foreground"
+                      availabilityStatus === s
+                        ? "bg-coral/20 text-coral"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {s}
@@ -343,7 +443,9 @@ function ProfilePage() {
                     type="button"
                     onClick={() => toggleInterest(i)}
                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
-                      interests.includes(i) ? "bg-coral/15 text-coral" : "bg-muted text-muted-foreground"
+                      interests.includes(i)
+                        ? "bg-coral/15 text-coral"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {i}
@@ -385,7 +487,11 @@ function ProfilePage() {
                 disabled={saving}
                 className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-coral px-3 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
               >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
                 Save changes
               </button>
             </div>
@@ -438,10 +544,15 @@ function ProfilePage() {
             {/* Interests */}
             {profile?.interests && profile.interests.length > 0 && (
               <div>
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Into</p>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Into
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.interests.map((i) => (
-                    <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                    <span
+                      key={i}
+                      className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground"
+                    >
                       {i}
                     </span>
                   ))}
@@ -452,10 +563,14 @@ function ProfilePage() {
             {/* Dietary */}
             {profile?.dietary && profile.dietary.length > 0 && (
               <div>
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Dietary</p>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Dietary
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.dietary.map((d) => (
-                    <Chip key={d} tone="leaf">🌱 {d}</Chip>
+                    <Chip key={d} tone="leaf">
+                      🌱 {d}
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -465,12 +580,25 @@ function ProfilePage() {
             {profile?.phone && profile?.show_phone && (
               <p className="text-xs text-muted-foreground">📞 {profile.phone}</p>
             )}
+
+            {/* Payment handles */}
+            {(profile?.paypal || profile?.iban) && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Settle up
+                </p>
+                <div className="space-y-0.5 text-xs text-muted-foreground">
+                  {profile?.paypal && <p>💳 PayPal · {profile.paypal}</p>}
+                  {profile?.iban && <p>🏦 {profile.iban}</p>}
+                  {profile?.payment_note && <p className="text-[11px]">{profile.payment_note}</p>}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       <MyContributions userId={user.id} />
-
 
       <Section title="Account">
         <button
@@ -537,7 +665,11 @@ function MyContributions({ userId }: { userId: string }) {
   return (
     <Section
       title="My contributions"
-      subtitle={loading ? "Loading…" : `${items.length} item${items.length === 1 ? "" : "s"} you're bringing`}
+      subtitle={
+        loading
+          ? "Loading…"
+          : `${items.length} item${items.length === 1 ? "" : "s"} you're bringing`
+      }
     >
       {loading ? (
         <div className="flex justify-center py-6">
@@ -563,7 +695,9 @@ function MyContributions({ userId }: { userId: string }) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
                     {item.name}
-                    {item.quantity ? <span className="font-normal text-muted-foreground"> · {item.quantity}</span> : null}
+                    {item.quantity ? (
+                      <span className="font-normal text-muted-foreground"> · {item.quantity}</span>
+                    ) : null}
                   </p>
                   {item.events ? (
                     <Link
@@ -572,7 +706,9 @@ function MyContributions({ userId }: { userId: string }) {
                       className="truncate text-xs font-semibold text-lake hover:underline"
                     >
                       {item.events.name}
-                      {start ? ` · ${start.toLocaleDateString(undefined, { day: "numeric", month: "short" })}` : ""}
+                      {start
+                        ? ` · ${start.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`
+                        : ""}
                     </Link>
                   ) : (
                     <p className="text-xs text-muted-foreground">Event removed</p>
