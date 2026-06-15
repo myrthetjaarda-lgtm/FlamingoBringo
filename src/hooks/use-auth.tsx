@@ -18,9 +18,6 @@ export type Profile = {
   show_phone: boolean;
   availability_status: string;
   social_mode: string;
-  paypal: string | null;
-  iban: string | null;
-  payment_note: string | null;
 };
 
 type AuthContextValue = {
@@ -43,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await supabase
       .from("profiles")
       .select(
-        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode, paypal, iban, payment_note",
+        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode",
       )
       .eq("id", userId)
       .maybeSingle();
@@ -71,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         { onConflict: "id" },
       )
       .select(
-        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode, paypal, iban, payment_note",
+        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode",
       )
       .maybeSingle();
 

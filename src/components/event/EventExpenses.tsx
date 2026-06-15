@@ -15,7 +15,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchProfilesFull, fetchRsvps, type ProfileFull } from "@/lib/events";
+import {
+  fetchPaymentHandles,
+  fetchProfilesFull,
+  fetchRsvps,
+  type PaymentHandles,
+  type ProfileFull,
+} from "@/lib/events";
 import {
   type ExpenseRow,
   type ExpenseShareRow,
@@ -41,6 +47,7 @@ export function EventExpenses({ eventId, isOrganizer }: { eventId: string; isOrg
   const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [shares, setShares] = useState<ExpenseShareRow[]>([]);
   const [profiles, setProfiles] = useState<Map<string, ProfileFull>>(new Map());
+  const [handles, setHandles] = useState<Map<string, PaymentHandles>>(new Map());
   const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +86,11 @@ export function EventExpenses({ eventId, isOrganizer }: { eventId: string; isOrg
           ].filter(Boolean) as string[],
         ),
       );
-      setProfiles(await fetchProfilesFull(ids));
+      const [profs, hndls] = await Promise.all([fetchProfilesFull(ids), fetchPaymentHandles(ids)]);
+      setProfiles(profs);
+      setHandles(hndls);
+    } catch {
+      // Tables/columns may not exist yet (migration not applied) — degrade to empty.
     } finally {
       setLoading(false);
     }
@@ -447,7 +458,7 @@ export function EventExpenses({ eventId, isOrganizer }: { eventId: string; isOrg
                   ? Math.min(100, Math.round((settledSum / expense.amount) * 100))
                   : 0;
               const payer = who(expense.paid_by);
-              const payerProfile = profiles.get(expense.paid_by);
+              const payerHandles = handles.get(expense.paid_by);
               const canManage =
                 !!user &&
                 (expense.created_by === user.id || expense.paid_by === user.id || isOrganizer);
@@ -485,32 +496,32 @@ export function EventExpenses({ eventId, isOrganizer }: { eventId: string; isOrg
                       </p>
 
                       {/* Pay the payer back */}
-                      {owesPayer && payerProfile && (payerProfile.paypal || payerProfile.iban) && (
+                      {owesPayer && payerHandles && (payerHandles.paypal || payerHandles.iban) && (
                         <div className="mt-1.5 rounded-xl border border-leaf/30 bg-leaf/5 px-2.5 py-1.5">
                           <p className="text-[10px] font-semibold uppercase tracking-wide text-leaf">
                             Pay {payer.name}
                           </p>
                           <div className="mt-0.5 flex flex-wrap gap-1.5">
-                            {payerProfile.paypal && (
+                            {payerHandles.paypal && (
                               <button
-                                onClick={() => copy("PayPal", payerProfile.paypal!)}
+                                onClick={() => copy("PayPal", payerHandles.paypal!)}
                                 className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold shadow-soft"
                               >
-                                <Copy className="h-3 w-3" /> PayPal: {payerProfile.paypal}
+                                <Copy className="h-3 w-3" /> PayPal: {payerHandles.paypal}
                               </button>
                             )}
-                            {payerProfile.iban && (
+                            {payerHandles.iban && (
                               <button
-                                onClick={() => copy("IBAN", payerProfile.iban!)}
+                                onClick={() => copy("IBAN", payerHandles.iban!)}
                                 className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold shadow-soft"
                               >
-                                <Copy className="h-3 w-3" /> IBAN: {payerProfile.iban}
+                                <Copy className="h-3 w-3" /> IBAN: {payerHandles.iban}
                               </button>
                             )}
                           </div>
-                          {payerProfile.payment_note && (
+                          {payerHandles.payment_note && (
                             <p className="mt-0.5 text-[10px] text-muted-foreground">
-                              {payerProfile.payment_note}
+                              {payerHandles.payment_note}
                             </p>
                           )}
                         </div>

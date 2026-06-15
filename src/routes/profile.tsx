@@ -5,7 +5,12 @@ import { LogOut, Check, Loader2, Pencil, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { SocialLinks } from "@/components/SocialLinks";
-import { type BringItemRow, fetchMyClaimedItems } from "@/lib/events";
+import {
+  type BringItemRow,
+  type PaymentHandles,
+  fetchMyClaimedItems,
+  fetchPaymentHandles,
+} from "@/lib/events";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
@@ -110,6 +115,9 @@ function ProfilePage() {
   const [paypal, setPaypal] = useState("");
   const [iban, setIban] = useState("");
   const [paymentNote, setPaymentNote] = useState("");
+  // Payment handles are loaded separately (behind the 20260614120000 migration)
+  // so a missing migration only hides them rather than breaking the profile page.
+  const [myHandles, setMyHandles] = useState<PaymentHandles | null>(null);
   const [dietary, setDietary] = useState<string[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
   const [availabilityStatus, setAvailabilityStatus] = useState("In Berlin");
@@ -126,9 +134,6 @@ function ProfilePage() {
     setInstagram(profile.instagram ?? "");
     setFacebook(profile.facebook ?? "");
     setShowPhone(profile.show_phone ?? true);
-    setPaypal(profile.paypal ?? "");
-    setIban(profile.iban ?? "");
-    setPaymentNote(profile.payment_note ?? "");
     setDietary(profile.dietary ?? []);
     setInterests(profile.interests ?? []);
     setAvailabilityStatus(profile.availability_status ?? "In Berlin");
@@ -140,6 +145,27 @@ function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
+  const hydrateHandles = (h: PaymentHandles | null) => {
+    setPaypal(h?.paypal ?? "");
+    setIban(h?.iban ?? "");
+    setPaymentNote(h?.payment_note ?? "");
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void fetchPaymentHandles([user.id]).then((m) => {
+      if (cancelled) return;
+      const h = m.get(user.id) ?? null;
+      setMyHandles(h);
+      hydrateHandles(h);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const toggleDiet = (d: string) =>
     setDietary((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
 
@@ -148,6 +174,7 @@ function ProfilePage() {
 
   const cancel = () => {
     hydrate();
+    hydrateHandles(myHandles);
     setEditing(false);
   };
 
@@ -169,20 +196,30 @@ function ProfilePage() {
         instagram: instagram.trim().slice(0, 100) || null,
         facebook: facebook.trim().slice(0, 200) || null,
         show_phone: showPhone,
-        paypal: paypal.trim().slice(0, 120) || null,
-        iban: iban.trim().slice(0, 40) || null,
-        payment_note: paymentNote.trim().slice(0, 120) || null,
         dietary,
         interests,
         availability_status: availabilityStatus,
         social_mode: socialMode,
       })
       .eq("id", user.id);
-    setSaving(false);
     if (error) {
+      setSaving(false);
       toast.error(error.message || "Couldn't save profile");
       return;
     }
+    // Payment handles live behind the 20260614120000 migration; update them
+    // separately so a missing migration only drops the handles, not the whole save.
+    const nextHandles: PaymentHandles = {
+      paypal: paypal.trim().slice(0, 120) || null,
+      iban: iban.trim().slice(0, 40) || null,
+      payment_note: paymentNote.trim().slice(0, 120) || null,
+    };
+    const { error: handlesError } = await supabase
+      .from("profiles")
+      .update(nextHandles)
+      .eq("id", user.id);
+    if (!handlesError) setMyHandles(nextHandles);
+    setSaving(false);
     await refreshProfile();
     toast.success("Profile saved");
     setEditing(false);
@@ -582,15 +619,17 @@ function ProfilePage() {
             )}
 
             {/* Payment handles */}
-            {(profile?.paypal || profile?.iban) && (
+            {(myHandles?.paypal || myHandles?.iban) && (
               <div>
                 <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Settle up
                 </p>
                 <div className="space-y-0.5 text-xs text-muted-foreground">
-                  {profile?.paypal && <p>💳 PayPal · {profile.paypal}</p>}
-                  {profile?.iban && <p>🏦 {profile.iban}</p>}
-                  {profile?.payment_note && <p className="text-[11px]">{profile.payment_note}</p>}
+                  {myHandles?.paypal && <p>💳 PayPal · {myHandles.paypal}</p>}
+                  {myHandles?.iban && <p>🏦 {myHandles.iban}</p>}
+                  {myHandles?.payment_note && (
+                    <p className="text-[11px]">{myHandles.payment_note}</p>
+                  )}
                 </div>
               </div>
             )}

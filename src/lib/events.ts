@@ -86,6 +86,11 @@ export type ProfileFull = {
   show_phone: boolean;
   default_location: string | null;
   equipment: string[];
+};
+
+// Payment handles live behind a migration and are fetched separately (see
+// fetchPaymentHandles) so a missing migration can't break core profile loads.
+export type PaymentHandles = {
   paypal: string | null;
   iban: string | null;
   payment_note: string | null;
@@ -181,12 +186,30 @@ export async function fetchProfilesFull(ids: string[]) {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, emoji_avatar, bio, dietary, phone, instagram, facebook, show_phone, default_location, equipment, paypal, iban, payment_note",
+      "id, display_name, emoji_avatar, bio, dietary, phone, instagram, facebook, show_phone, default_location, equipment",
     )
     .in("id", ids);
   if (error) throw error;
   const map = new Map<string, ProfileFull>();
   (data as ProfileFull[] | null)?.forEach((p) => map.set(p.id, p));
+  return map;
+}
+
+// Fetch PayPal / IBAN / payment-note handles. These columns live behind the
+// 20260614120000 migration; if it hasn't been applied yet the query errors, so
+// we swallow it and return an empty map — the "settle up" handles just don't
+// show, rather than breaking the calling page.
+export async function fetchPaymentHandles(ids: string[]) {
+  const map = new Map<string, PaymentHandles>();
+  if (ids.length === 0) return map;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, paypal, iban, payment_note")
+    .in("id", ids);
+  if (error) return map;
+  (data as (PaymentHandles & { id: string })[] | null)?.forEach((p) =>
+    map.set(p.id, { paypal: p.paypal, iban: p.iban, payment_note: p.payment_note }),
+  );
   return map;
 }
 
