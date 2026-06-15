@@ -11,7 +11,8 @@ export type SpotCategory =
   | "Flea market"
   | "Club"
   | "Sports"
-  | "Picnic spot";
+  | "Picnic spot"
+  | "Landmark";
 
 export type Weather = "sunny" | "warm" | "cloudy" | "rainy" | "cool" | "evening";
 
@@ -240,6 +241,21 @@ export const SPOTS: Spot[] = [
     crowdedness: "busy",
     rating: 4.4,
   },
+  {
+    id: "nirx",
+    name: "NIRx Medizintechnik",
+    emoji: "🧠",
+    category: "Landmark",
+    neighborhood: "Wedding",
+    blurb: "fNIRS brain-imaging lab on the historic AEG / Humboldthain tech campus.",
+    vibe: ["Science", "Tech", "Visit"],
+    bestFor: ["rainy", "cool", "cloudy"],
+    walkMin: 32,
+    crowdedness: "quiet",
+    rating: 4.7,
+    tip: "Gustav-Meyer-Allee 25, 13355 Berlin — pop by during Lange Nacht der Wissenschaften.",
+    link: "https://nirx.net",
+  },
 ];
 
 export const NEIGHBORHOODS: Neighborhood[] = [
@@ -376,5 +392,6 @@ export const SPOT_COORDS: Record<string, { lat: number; lng: number }> = {
   treptower:         { lat: 52.4886, lng: 13.4691 },
   "volleyball-mitte":{ lat: 52.5230, lng: 13.4015 },
   "about-blank":     { lat: 52.5057, lng: 13.4761 },
+  nirx:              { lat: 52.5420, lng: 13.3866 },
 };
 

@@ -41,6 +41,7 @@ const CATEGORIES: { key: SpotCategory | "All"; label: string; emoji: string }[] 
   { key: "Sports", label: "Sports", emoji: "🏐" },
   { key: "Picnic spot", label: "Picnic", emoji: "🧺" },
   { key: "Club", label: "Club", emoji: "🕺" },
+  { key: "Landmark", label: "Landmarks", emoji: "🧠" },
 ];
 
 function BerlinPage() {
