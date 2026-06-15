@@ -380,8 +380,8 @@ function EditEventCard({
         location: location.trim() || null,
         description: description.trim() || null,
         event_type: eventType || null,
-        home_team: isFootball ? homeTeam.trim() || null : null,
-        away_team: isFootball ? awayTeam.trim() || null : null,
+        home_team: isFootball ? homeTeam.trim().slice(0, 40) || null : null,
+        away_team: isFootball ? awayTeam.trim().slice(0, 40) || null : null,
         home_score: isFootball ? toScore(homeScore) : null,
         away_score: isFootball ? toScore(awayScore) : null,
       };
