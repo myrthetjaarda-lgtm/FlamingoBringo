@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { createEvent } from "@/lib/events";
+import { createEvent, EVENT_TYPES } from "@/lib/events";
 import { fetchAllGroups, fetchMyGroupIds, type GroupRow } from "@/lib/groups";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ export function CreateEventSheet({
   const [startsAt, setStartsAt] = useState("");
   const [location, setLocation] = useState(defaultLocation);
   const [description, setDescription] = useState("");
+  const [eventType, setEventType] = useState("");
   const [groupId, setGroupId] = useState<string | "">("");
   const [groups, setGroups] = useState<GroupRow[]>([]);
   const [saving, setSaving] = useState(false);
@@ -42,6 +43,7 @@ export function CreateEventSheet({
         starts_at: startsAt ? new Date(startsAt).toISOString() : null,
         location: location.trim() || null,
         description: description.trim() || null,
+        event_type: eventType || null,
         group_id: groupId || null,
       });
       toast.success("Event created");
@@ -90,6 +92,25 @@ export function CreateEventSheet({
           />
           <div>
             <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Type (optional)
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {EVENT_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setEventType(eventType === t.value ? "" : t.value)}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                    eventType === t.value ? "bg-coral text-white" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {t.emoji} {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Group (optional)
             </label>
             <select
@@ -107,7 +128,10 @@ export function CreateEventSheet({
           </div>
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-full bg-muted px-4 py-2 text-xs font-semibold">
+          <button
+            onClick={onClose}
+            className="rounded-full bg-muted px-4 py-2 text-xs font-semibold"
+          >
             Cancel
           </button>
           <button

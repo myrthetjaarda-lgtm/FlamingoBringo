@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
+      .select(
+        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode",
+      )
       .eq("id", userId)
       .maybeSingle();
 
@@ -49,7 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // No profile yet — create one (e.g. Google OAuth first sign-in)
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const displayName =
       user?.user_metadata?.full_name ||
       user?.user_metadata?.name ||
@@ -59,19 +63,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: created } = await supabase
       .from("profiles")
-      .upsert({ id: userId, display_name: displayName, emoji_avatar: emojiAvatar }, { onConflict: "id" })
-      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
+      .upsert(
+        { id: userId, display_name: displayName, emoji_avatar: emojiAvatar },
+        { onConflict: "id" },
+      )
+      .select(
+        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode",
+      )
       .maybeSingle();
 
     setProfile((created as Profile | null) ?? null);
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
         // defer to avoid deadlock in callback
-        setTimeout(() => { void loadProfile(s.user.id); }, 0);
+        setTimeout(() => {
+          void loadProfile(s.user.id);
+        }, 0);
       } else {
         setProfile(null);
       }

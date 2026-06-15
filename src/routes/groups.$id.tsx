@@ -35,7 +35,7 @@ import {
   updateGroup,
   updateMemberRole,
 } from "@/lib/groups";
-import { type EventRow, fetchAllEvents, createEvent } from "@/lib/events";
+import { type EventRow, EVENT_TYPES, fetchAllEvents, createEvent } from "@/lib/events";
 import { fetchProfiles, type ProfileLite } from "@/lib/events";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { GroupMemories } from "@/components/group/GroupMemories";
@@ -95,7 +95,7 @@ function GroupDetail() {
   }, [id]);
 
   const myMembership = useMemo(
-    () => (user ? members.find((m) => m.user_id === user.id) ?? null : null),
+    () => (user ? (members.find((m) => m.user_id === user.id) ?? null) : null),
     [members, user],
   );
   const isMember = !!myMembership;
@@ -198,7 +198,9 @@ function GroupDetail() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="font-display text-2xl font-semibold">{group.name}</h1>
-            {group.tagline && <p className="mt-0.5 text-sm text-muted-foreground">{group.tagline}</p>}
+            {group.tagline && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{group.tagline}</p>
+            )}
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <Chip tone="lake">
                 <PrivacyIcon className="h-3 w-3" /> {PRIVACY_LABELS[group.privacy]}
@@ -342,6 +344,7 @@ function EventsTab({
   const [name, setName] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [location, setLocation] = useState("");
+  const [eventType, setEventType] = useState("");
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -353,6 +356,7 @@ function EventsTab({
         name: name.trim(),
         starts_at: startsAt ? new Date(startsAt).toISOString() : null,
         location: location.trim() || null,
+        event_type: eventType || null,
         group_id: group.id,
       });
       toast.success("Event created");
@@ -360,6 +364,7 @@ function EventsTab({
       setName("");
       setStartsAt("");
       setLocation("");
+      setEventType("");
       onCreated();
       navigate({ to: "/event/$id", params: { id: ev.id } });
     } catch {
@@ -407,6 +412,20 @@ function EventsTab({
               maxLength={120}
               className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm"
             />
+            <div className="flex flex-wrap gap-1.5">
+              {EVENT_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setEventType(eventType === t.value ? "" : t.value)}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                    eventType === t.value ? "bg-coral text-white" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {t.emoji} {t.label}
+                </button>
+              ))}
+            </div>
             <button
               onClick={submit}
               disabled={saving || !name.trim()}
@@ -623,7 +642,11 @@ function SettingsTab({
               disabled={saving}
               className="inline-flex items-center gap-1 rounded-full bg-coral px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
             >
-              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+              {saving ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Check className="h-3 w-3" />
+              )}
               Save
             </button>
           ) : (
@@ -680,7 +703,9 @@ function SettingsTab({
           <div className="rounded-2xl border border-border/60 bg-card p-3 text-sm shadow-card">
             <p>
               <span className="text-muted-foreground">Name: </span>
-              <b>{group.emoji} {group.name}</b>
+              <b>
+                {group.emoji} {group.name}
+              </b>
             </p>
             <p className="mt-1">
               <span className="text-muted-foreground">Privacy: </span>
