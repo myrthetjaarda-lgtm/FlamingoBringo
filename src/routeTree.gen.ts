@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpotsRouteImport } from './routes/spots'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as GroupsRouteImport } from './routes/groups'
@@ -17,9 +18,15 @@ import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as BerlinRouteImport } from './routes/berlin'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShareTokenRouteImport } from './routes/share.$token'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventIdRouteImport } from './routes/event.$id'
 
+const SpotsRoute = SpotsRouteImport.update({
+  id: '/spots',
+  path: '/spots',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -60,6 +67,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareTokenRoute = ShareTokenRouteImport.update({
+  id: '/share/$token',
+  path: '/share/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupsIdRoute = GroupsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -80,8 +92,10 @@ export interface FileRoutesByFullPath {
   '/groups': typeof GroupsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/spots': typeof SpotsRoute
   '/event/$id': typeof EventIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/share/$token': typeof ShareTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,8 +106,10 @@ export interface FileRoutesByTo {
   '/groups': typeof GroupsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/spots': typeof SpotsRoute
   '/event/$id': typeof EventIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/share/$token': typeof ShareTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,8 +121,10 @@ export interface FileRoutesById {
   '/groups': typeof GroupsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/spots': typeof SpotsRoute
   '/event/$id': typeof EventIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/share/$token': typeof ShareTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,8 +137,10 @@ export interface FileRouteTypes {
     | '/groups'
     | '/profile'
     | '/reset-password'
+    | '/spots'
     | '/event/$id'
     | '/groups/$id'
+    | '/share/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,8 +151,10 @@ export interface FileRouteTypes {
     | '/groups'
     | '/profile'
     | '/reset-password'
+    | '/spots'
     | '/event/$id'
     | '/groups/$id'
+    | '/share/$token'
   id:
     | '__root__'
     | '/'
@@ -143,8 +165,10 @@ export interface FileRouteTypes {
     | '/groups'
     | '/profile'
     | '/reset-password'
+    | '/spots'
     | '/event/$id'
     | '/groups/$id'
+    | '/share/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -156,11 +180,20 @@ export interface RootRouteChildren {
   GroupsRoute: typeof GroupsRouteWithChildren
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SpotsRoute: typeof SpotsRoute
   EventIdRoute: typeof EventIdRoute
+  ShareTokenRoute: typeof ShareTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spots': {
+      id: '/spots'
+      path: '/spots'
+      fullPath: '/spots'
+      preLoaderRoute: typeof SpotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -217,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/$token': {
+      id: '/share/$token'
+      path: '/share/$token'
+      fullPath: '/share/$token'
+      preLoaderRoute: typeof ShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groups/$id': {
       id: '/groups/$id'
       path: '/$id'
@@ -254,7 +294,9 @@ const rootRouteChildren: RootRouteChildren = {
   GroupsRoute: GroupsRouteWithChildren,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SpotsRoute: SpotsRoute,
   EventIdRoute: EventIdRoute,
+  ShareTokenRoute: ShareTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

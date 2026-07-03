@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -77,21 +78,44 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#ff7a8a" },
       { title: "FlamingoBringo — Plan together. Bring together." },
-      { name: "description", content: "Warm, social event planning for picnics, BBQs, lake days & parties. RSVP, bring lists, food, drinks, polls and shared costs — all in one place." },
+      {
+        name: "description",
+        content:
+          "Warm, social event planning for picnics, BBQs, lake days & parties. RSVP, bring lists, food, drinks, polls and shared costs — all in one place.",
+      },
       { property: "og:title", content: "FlamingoBringo — Plan together. Bring together." },
-      { property: "og:description", content: "Warm, social event planning for picnics, BBQs, lake days & parties. RSVP, bring lists, food, drinks, polls and shared costs — all in one place." },
+      {
+        property: "og:description",
+        content:
+          "Warm, social event planning for picnics, BBQs, lake days & parties. RSVP, bring lists, food, drinks, polls and shared costs — all in one place.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "FlamingoBringo — Plan together. Bring together." },
-      { name: "twitter:description", content: "Warm, social event planning for picnics, BBQs, lake days & parties. RSVP, bring lists, food, drinks, polls and shared costs — all in one place." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d46b00b2-6df9-417d-98a2-4a109a37efa0/id-preview-67b456f7--520ba05a-f19b-44dc-995f-c5e57028fa47.lovable.app-1779986793665.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d46b00b2-6df9-417d-98a2-4a109a37efa0/id-preview-67b456f7--520ba05a-f19b-44dc-995f-c5e57028fa47.lovable.app-1779986793665.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Warm, social event planning for picnics, BBQs, lake days & parties. RSVP, bring lists, food, drinks, polls and shared costs — all in one place.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d46b00b2-6df9-417d-98a2-4a109a37efa0/id-preview-67b456f7--520ba05a-f19b-44dc-995f-c5e57028fa47.lovable.app-1779986793665.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d46b00b2-6df9-417d-98a2-4a109a37efa0/id-preview-67b456f7--520ba05a-f19b-44dc-995f-c5e57028fa47.lovable.app-1779986793665.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -113,8 +137,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Routes that must render without a Supabase session — friends opening a
+// share link have never signed in and shouldn't be sent to the login form.
+const PUBLIC_ROUTE_PREFIXES = ["/share/"];
+
 function AuthBoundary() {
   const { loading, session } = useAuth();
+  const { pathname } = useLocation();
+  const isPublicRoute = PUBLIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+  if (isPublicRoute) return <Outlet />;
+
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-gradient-sunset">

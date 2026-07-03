@@ -501,6 +501,137 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendation_shares: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          revoked_at: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          revoked_at?: string | null
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          revoked_at?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          added_by: string
+          added_by_user_id: string | null
+          address: string
+          category: string
+          city: string
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          name: string
+          notes: string | null
+          owner_id: string
+          rating: number | null
+          region: string
+          share_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          added_by: string
+          added_by_user_id?: string | null
+          address: string
+          category: string
+          city: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name: string
+          notes?: string | null
+          owner_id: string
+          rating?: number | null
+          region: string
+          share_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          added_by?: string
+          added_by_user_id?: string | null
+          address?: string
+          category?: string
+          city?: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          rating?: number | null
+          region?: string
+          share_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "recommendation_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festivals: {
+        Row: {
+          city: string | null
+          ends_on: string | null
+          external_id: string
+          fetched_at: string
+          id: string
+          name: string
+          region: string
+          source: string
+          starts_on: string | null
+          url: string | null
+        }
+        Insert: {
+          city?: string | null
+          ends_on?: string | null
+          external_id: string
+          fetched_at?: string
+          id?: string
+          name: string
+          region: string
+          source: string
+          starts_on?: string | null
+          url?: string | null
+        }
+        Update: {
+          city?: string | null
+          ends_on?: string | null
+          external_id?: string
+          fetched_at?: string
+          id?: string
+          name?: string
+          region?: string
+          source?: string
+          starts_on?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

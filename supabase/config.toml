@@ -1,1 +1,7 @@
 project_id = "ixnuxjkgltzsgwimnygi"
+
+[functions.fetch-festivals]
+# Invoked by pg_cron (net.http_post), not by a logged-in user, so it can't
+# carry a Supabase user JWT. Auth is instead a shared secret checked inside
+# the function itself (see fetch-festivals/index.ts + the scheduling migration).
+verify_jwt = false
