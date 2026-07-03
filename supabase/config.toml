@@ -1,4 +1,4 @@
-project_id = "ixnuxjkgltzsgwimnygi"
+project_id = "ugyerbycgotkfilepbfw"
 
 [functions.fetch-festivals]
 # Invoked by pg_cron (net.http_post), not by a logged-in user, so it can't
