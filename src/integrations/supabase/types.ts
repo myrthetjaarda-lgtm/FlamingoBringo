@@ -406,11 +406,13 @@ export type Database = {
         Row: {
           availability_status: string
           avatar_url: string | null
+          bike_scooter_provider: string | null
           bio: string | null
           created_at: string
           default_location: string | null
           dietary: string[]
           display_name: string
+          driving_license: boolean
           emoji_avatar: string
           equipment: string[]
           facebook: string | null
@@ -418,19 +420,27 @@ export type Database = {
           instagram: string | null
           interests: string[]
           neighborhood: string | null
+          owns_car: boolean
           phone: string | null
+          rideshare_provider: string | null
           show_phone: boolean
           social_mode: string
+          transit_passes: string[]
           updated_at: string
+          vehicle_items: Json
+          vehicle_parking_address: string | null
+          vehicle_parking_note: string | null
         }
         Insert: {
           availability_status?: string
           avatar_url?: string | null
+          bike_scooter_provider?: string | null
           bio?: string | null
           created_at?: string
           default_location?: string | null
           dietary?: string[]
           display_name?: string
+          driving_license?: boolean
           emoji_avatar?: string
           equipment?: string[]
           facebook?: string | null
@@ -438,19 +448,27 @@ export type Database = {
           instagram?: string | null
           interests?: string[]
           neighborhood?: string | null
+          owns_car?: boolean
           phone?: string | null
+          rideshare_provider?: string | null
           show_phone?: boolean
           social_mode?: string
+          transit_passes?: string[]
           updated_at?: string
+          vehicle_items?: Json
+          vehicle_parking_address?: string | null
+          vehicle_parking_note?: string | null
         }
         Update: {
           availability_status?: string
           avatar_url?: string | null
+          bike_scooter_provider?: string | null
           bio?: string | null
           created_at?: string
           default_location?: string | null
           dietary?: string[]
           display_name?: string
+          driving_license?: boolean
           emoji_avatar?: string
           equipment?: string[]
           facebook?: string | null
@@ -458,10 +476,16 @@ export type Database = {
           instagram?: string | null
           interests?: string[]
           neighborhood?: string | null
+          owns_car?: boolean
           phone?: string | null
+          rideshare_provider?: string | null
           show_phone?: boolean
           social_mode?: string
+          transit_passes?: string[]
           updated_at?: string
+          vehicle_items?: Json
+          vehicle_parking_address?: string | null
+          vehicle_parking_note?: string | null
         }
         Relationships: []
       }

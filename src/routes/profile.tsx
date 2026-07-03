@@ -42,6 +42,16 @@ const SOCIAL_MODE_OPTIONS = [
   "Outdoor mode", "Sports mood", "Quiet weekend", "Family time",
 ];
 
+const DRIVING_OPTIONS = ["Driver's license", "Own a car"];
+
+const BIKE_SCOOTER_PROVIDERS = [
+  "Jobrad", "Swapfiets", "Nextbike", "Lime", "Tier", "Voi", "Dance",
+];
+
+const TRANSIT_PASS_OPTIONS = ["BVG Ticket", "Bahncard"];
+
+const RIDESHARE_PROVIDERS = ["Uber", "Bolt", "FREE NOW"];
+
 const EMOJI_POOL = ["🦩", "🍉", "🌻", "🥖", "🍑", "🌮", "🥑", "🧁", "🐝", "🐙", "🦊", "🌈"];
 
 function ProfilePage() {
@@ -62,6 +72,11 @@ function ProfilePage() {
   const [interests, setInterests] = useState<string[]>([]);
   const [availabilityStatus, setAvailabilityStatus] = useState("In Berlin");
   const [socialMode, setSocialMode] = useState("Looking for plans");
+  const [drivingLicense, setDrivingLicense] = useState(false);
+  const [ownsCar, setOwnsCar] = useState(false);
+  const [bikeScooterProvider, setBikeScooterProvider] = useState<string | null>(null);
+  const [transitPasses, setTransitPasses] = useState<string[]>([]);
+  const [rideshareProvider, setRideshareProvider] = useState<string | null>(null);
 
   const hydrate = () => {
     if (!profile) return;
@@ -78,6 +93,11 @@ function ProfilePage() {
     setInterests(profile.interests ?? []);
     setAvailabilityStatus(profile.availability_status ?? "In Berlin");
     setSocialMode(profile.social_mode ?? "Looking for plans");
+    setDrivingLicense(profile.driving_license ?? false);
+    setOwnsCar(profile.owns_car ?? false);
+    setBikeScooterProvider(profile.bike_scooter_provider ?? null);
+    setTransitPasses(profile.transit_passes ?? []);
+    setRideshareProvider(profile.rideshare_provider ?? null);
   };
 
   useEffect(() => {
@@ -90,6 +110,9 @@ function ProfilePage() {
 
   const toggleInterest = (i: string) =>
     setInterests((cur) => (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]));
+
+  const toggleTransitPass = (p: string) =>
+    setTransitPasses((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
 
   const cancel = () => {
     hydrate();
@@ -118,6 +141,11 @@ function ProfilePage() {
         interests,
         availability_status: availabilityStatus,
         social_mode: socialMode,
+        driving_license: drivingLicense,
+        owns_car: ownsCar,
+        bike_scooter_provider: bikeScooterProvider,
+        transit_passes: transitPasses,
+        rideshare_provider: rideshareProvider,
       })
       .eq("id", user.id);
     setSaving(false);
@@ -372,6 +400,78 @@ function ProfilePage() {
               </div>
             </Field>
 
+            <Field label="Driving">
+              <div className="flex flex-wrap gap-1.5">
+                {DRIVING_OPTIONS.map((d) => {
+                  const on = d === "Driver's license" ? drivingLicense : ownsCar;
+                  const toggle = d === "Driver's license" ? setDrivingLicense : setOwnsCar;
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => toggle((v) => !v)}
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                        on ? "bg-lake/15 text-lake" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+
+            <Field label="Bike & scooter" hint="tap again to clear">
+              <div className="flex flex-wrap gap-1.5">
+                {BIKE_SCOOTER_PROVIDERS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setBikeScooterProvider((cur) => (cur === p ? null : p))}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                      bikeScooterProvider === p ? "bg-leaf/15 text-leaf" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Public transit">
+              <div className="flex flex-wrap gap-1.5">
+                {TRANSIT_PASS_OPTIONS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => toggleTransitPass(p)}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                      transitPasses.includes(p) ? "bg-coral/15 text-coral" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Rideshare" hint="tap again to clear">
+              <div className="flex flex-wrap gap-1.5">
+                {RIDESHARE_PROVIDERS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setRideshareProvider((cur) => (cur === p ? null : p))}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                      rideshareProvider === p ? "bg-sun/25 text-sun-foreground" : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
             <div className="flex gap-2 pt-2">
               <button
                 onClick={cancel}
@@ -457,6 +557,23 @@ function ProfilePage() {
                   {profile.dietary.map((d) => (
                     <Chip key={d} tone="leaf">🌱 {d}</Chip>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Mobility */}
+            {(profile?.driving_license || profile?.owns_car || profile?.bike_scooter_provider ||
+              (profile?.transit_passes && profile.transit_passes.length > 0) || profile?.rideshare_provider) && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mobility</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile?.driving_license && <Chip tone="lake">🪪 Driver's license</Chip>}
+                  {profile?.owns_car && <Chip tone="lake">🚗 Own a car</Chip>}
+                  {profile?.bike_scooter_provider && <Chip tone="leaf">🚲 {profile.bike_scooter_provider}</Chip>}
+                  {profile?.transit_passes?.map((p) => (
+                    <Chip key={p} tone="coral">🚇 {p}</Chip>
+                  ))}
+                  {profile?.rideshare_provider && <Chip tone="sun">🚕 {profile.rideshare_provider}</Chip>}
                 </div>
               </div>
             )}

@@ -18,6 +18,14 @@ export type Profile = {
   show_phone: boolean;
   availability_status: string;
   social_mode: string;
+  driving_license: boolean;
+  owns_car: boolean;
+  bike_scooter_provider: string | null;
+  transit_passes: string[];
+  rideshare_provider: string | null;
+  vehicle_parking_address: string | null;
+  vehicle_parking_note: string | null;
+  vehicle_items: { id: string; label: string; date: string | null }[];
 };
 
 type AuthContextValue = {
@@ -39,7 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
+      .select(
+        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode, driving_license, owns_car, bike_scooter_provider, transit_passes, rideshare_provider, vehicle_parking_address, vehicle_parking_note, vehicle_items",
+      )
       .eq("id", userId)
       .maybeSingle();
 
@@ -60,7 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: created } = await supabase
       .from("profiles")
       .upsert({ id: userId, display_name: displayName, emoji_avatar: emojiAvatar }, { onConflict: "id" })
-      .select("id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode")
+      .select(
+        "id, display_name, emoji_avatar, neighborhood, bio, interests, phone, default_location, avatar_url, dietary, instagram, facebook, show_phone, availability_status, social_mode, driving_license, owns_car, bike_scooter_provider, transit_passes, rideshare_provider, vehicle_parking_address, vehicle_parking_note, vehicle_items",
+      )
       .maybeSingle();
 
     setProfile((created as Profile | null) ?? null);

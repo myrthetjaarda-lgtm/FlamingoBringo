@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { type EventRow, fetchAllEvents, fetchBringItemCounts, fetchProfiles, type ProfileLite } from "@/lib/events";
 import { fetchAllGroups, type GroupRow } from "@/lib/groups";
 import { CreateEventSheet } from "@/components/event/CreateEventSheet";
+import { VehicleCard } from "@/components/VehicleCard";
 
 type TimeFilter = "upcoming" | "past" | "all";
 
@@ -174,6 +175,8 @@ function HomePage() {
           </div>
         </div>
       )}
+
+      <VehicleCard />
 
       {/* Event list */}
       <Section
