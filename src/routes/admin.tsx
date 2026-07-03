@@ -94,6 +94,18 @@ function AdminPage() {
                         </span>
                       )}
                     </div>
+                    {(u.driving_license || u.owns_car || u.bike_scooter_provider ||
+                      u.transit_passes.length > 0 || u.rideshare_provider) && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {u.driving_license && <Chip tone="lake">🪪 License</Chip>}
+                        {u.owns_car && <Chip tone="lake">🚗 Car</Chip>}
+                        {u.bike_scooter_provider && <Chip tone="leaf">🚲 {u.bike_scooter_provider}</Chip>}
+                        {u.transit_passes.map((p: string) => (
+                          <Chip key={p} tone="coral">🚇 {p}</Chip>
+                        ))}
+                        {u.rideshare_provider && <Chip tone="sun">🚕 {u.rideshare_provider}</Chip>}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

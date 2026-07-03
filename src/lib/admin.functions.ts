@@ -10,6 +10,11 @@ export type AdminUser = {
   display_name: string;
   emoji_avatar: string;
   neighborhood: string | null;
+  driving_license: boolean;
+  owns_car: boolean;
+  bike_scooter_provider: string | null;
+  transit_passes: string[];
+  rideshare_provider: string | null;
 };
 
 export const getAdminUsers = createServerFn({ method: "GET" }).handler(async () => {
@@ -25,7 +30,9 @@ export const getAdminUsers = createServerFn({ method: "GET" }).handler(async () 
 
   const { data: profiles, error: profErr } = await admin
     .from("profiles")
-    .select("id, display_name, emoji_avatar, neighborhood");
+    .select(
+      "id, display_name, emoji_avatar, neighborhood, driving_license, owns_car, bike_scooter_provider, transit_passes, rideshare_provider",
+    );
   if (profErr) throw new Error(profErr.message);
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
@@ -42,6 +49,11 @@ export const getAdminUsers = createServerFn({ method: "GET" }).handler(async () 
       display_name: p?.display_name ?? u.email?.split("@")[0] ?? "?",
       emoji_avatar: p?.emoji_avatar ?? "🦩",
       neighborhood: p?.neighborhood ?? null,
+      driving_license: p?.driving_license ?? false,
+      owns_car: p?.owns_car ?? false,
+      bike_scooter_provider: p?.bike_scooter_provider ?? null,
+      transit_passes: p?.transit_passes ?? [],
+      rideshare_provider: p?.rideshare_provider ?? null,
     } satisfies AdminUser;
   }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 });
